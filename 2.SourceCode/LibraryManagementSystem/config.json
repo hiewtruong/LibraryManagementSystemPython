@@ -1,0 +1,6 @@
+{
+    "DB_SERVER": "172.16.1.240",
+    "DB_NAME": "LibraryManagement",
+    "DB_USERNAME": "sa",
+    "DB_PASSWORD": "12345678aA@"
+}
