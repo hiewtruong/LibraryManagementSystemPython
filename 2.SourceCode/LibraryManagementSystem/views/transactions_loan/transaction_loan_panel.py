@@ -1,14 +1,12 @@
-import tkinter as tk
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout
 
-class TransactionLoanPanel(tk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent, bg="white")
-        self.label = tk.Label(self, text="Quản lý đơn thuê/mượn sách", font=("Arial", 18, "bold"), bg="white")
-        self.label.pack(pady=20)
+class TransactionLoanPanel(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setStyleSheet("background-color: white;")
 
-    def cleanup(self):
-        pass
+        layout = QVBoxLayout(self)
 
-    def destroy(self):
-        self.cleanup()
-        super().destroy()
+        label = QLabel("Quản lý đơn thuê/mượn sách")
+        label.setStyleSheet("font-size: 20px; font-weight: bold; margin-top: 20px;")
+        layout.addWidget(label)

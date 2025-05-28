@@ -1,0 +1,13 @@
+2.SourceCode/LibraryManagementSystem/controllers/__pycache__/
+2.SourceCode/LibraryManagementSystem/db_utils/__pycache__/
+2.SourceCode/LibraryManagementSystem/domain/dto/__pycache__/
+2.SourceCode/LibraryManagementSystem/lib/__pycache__/
+2.SourceCode/LibraryManagementSystem/lib/common_ui/__pycache__/
+2.SourceCode/LibraryManagementSystem/repositories/__pycache__/
+2.SourceCode/LibraryManagementSystem/services/__pycache__/
+2.SourceCode/LibraryManagementSystem/views/__pycache__/
+2.SourceCode/LibraryManagementSystem/views/author/__pycache__/
+2.SourceCode/LibraryManagementSystem/views/book/__pycache__/
+2.SourceCode/LibraryManagementSystem/views/category/__pycache__/
+2.SourceCode/LibraryManagementSystem/views/transactions_loan/__pycache__/
+2.SourceCode/LibraryManagementSystem/views/user/__pycache__/

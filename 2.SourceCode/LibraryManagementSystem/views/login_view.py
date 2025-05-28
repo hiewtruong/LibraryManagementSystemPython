@@ -1,92 +1,168 @@
-import tkinter as tk
-from tkinter import messagebox
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PIL import Image
 from controllers.user_controller import UserController
 from lib.constants import MISSING_USER_OR_PASSWORD, ERROR
 import os
-from PIL import Image, ImageTk
+import io
 
-class LoginView:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Library Management - Admin Login")
-        self._center_window(900, 400)
-        self.root.resizable(False, False)
+class Ui_MainWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
         self.controller = UserController()
-        self._build_ui()
+        self.setupUi(self)
+        self._center_window(800, 400)
+        self.setFixedSize(800, 400)
+        self.pushButton.clicked.connect(self.handle_login)
 
-    def _center_window(self, width, height):
-        """Căn giữa cửa sổ"""
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        x = (screen_width - width) // 2
-        y = (screen_height - height) // 2
-        self.root.geometry(f"{width}x{height}+{x}+{y}")
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.setWindowTitle("Library Management - Admin Login")
+        
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        main_layout = QtWidgets.QHBoxLayout(self.centralwidget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
-    def _build_ui(self):
-        main_frame = tk.Frame(self.root, bg="white")
-        main_frame.pack(fill="both", expand=True)
+        left_widget = QtWidgets.QWidget()
+        left_widget.setFixedWidth(400)
+        left_layout = QtWidgets.QVBoxLayout(left_widget)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setAlignment(QtCore.Qt.AlignCenter) 
 
-        # --- Left Frame (Ảnh nền) ---
-        left_frame = tk.Frame(main_frame, width=500)
-        left_frame.pack(side="left", fill="both", expand=False)
-
-        image_path = os.path.join("resources", "img", "login_img.jpg")  # Thay đường dẫn ảnh nếu cần
+        image_path = os.path.join("resources", "img", "career-planning.png")
         if os.path.exists(image_path):
             image = Image.open(image_path)
-            bg_image = ImageTk.PhotoImage(image)
-            bg_label = tk.Label(left_frame, image=bg_image)
-            bg_label.place(relwidth=1, relheight=1)
-            bg_label.image = bg_image  # Giữ tham chiếu ảnh
+            buffer = io.BytesIO()
+            image.save(buffer, format="PNG")
+            pixmap = QtGui.QPixmap()
+            pixmap.loadFromData(buffer.getvalue())
+            bg_label = QtWidgets.QLabel()
+            bg_label.setPixmap(pixmap.scaled(200, 200, QtCore.Qt.KeepAspectRatio)) 
+            bg_label.setAlignment(QtCore.Qt.AlignCenter)
+            left_layout.addWidget(bg_label)
         else:
-            # Nếu không có ảnh, hiện thông báo
-            tk.Label(left_frame, text="Không tìm thấy ảnh", bg="gray", fg="white").pack(expand=True)
+            bg_label = QtWidgets.QLabel("Không tìm thấy ảnh")
+            bg_label.setStyleSheet("background-color: gray; color: white;")
+            bg_label.setAlignment(QtCore.Qt.AlignCenter)
+            left_layout.addWidget(bg_label)
 
-        # --- Right Frame (Form Login) ---
-        right_frame = tk.Frame(main_frame, bg="white", padx=20, pady=20)
-        right_frame.pack(side="right", fill="both", expand=True)
+        main_layout.addWidget(left_widget)
 
-        title_label = tk.Label(
-            right_frame,
-            text="Welcome to Library Management System",
-            font=("Helvetica", 16, "bold"),
-            fg="#333",
-            bg="white"
-        )
-        title_label.pack(pady=(20, 30))
+        right_widget = QtWidgets.QWidget()
+        right_layout = QtWidgets.QVBoxLayout(right_widget)
+        right_layout.setAlignment(QtCore.Qt.AlignCenter) 
+        right_layout.setContentsMargins(20, 20, 20, 20)
+        right_layout.setSpacing(10)
 
-        # Username
-        tk.Label(right_frame, text="Tài khoản:", bg="white", anchor="w").pack(fill="x")
-        self.username_entry = tk.Entry(right_frame, width=40, bg="white", highlightthickness=0, highlightbackground="black")
-        self.username_entry.pack(pady=(5, 15))
+        self.label = QtWidgets.QLabel("Admin Login")
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setStyleSheet("color: #333;")
+        right_layout.addWidget(self.label, alignment=QtCore.Qt.AlignCenter)
+        right_layout.addSpacing(15)
 
-        # Password
-        tk.Label(right_frame, text="Mật khẩu:", bg="white", anchor="w").pack(fill="x")
-        self.password_entry = tk.Entry(right_frame, show="*", width=40, bg="white", highlightthickness=0, highlightbackground="black")
-        self.password_entry.pack(pady=(5, 20))
+        username_layout = QtWidgets.QVBoxLayout()
+        self.label_2 = QtWidgets.QLabel("Username:")
+        self.label_2.setStyleSheet("color: #333;")
+        username_layout.addWidget(self.label_2)
 
-        # Login Button
-        login_button = tk.Button(
-            right_frame,
-            text="Đăng nhập",
-            width=20,
-            command=self.handle_login,
-            bg="white",
-            fg="black",
-            activebackground="white",
-            relief="flat",
-            highlightthickness=1,
-            highlightbackground="white"
-        )
-        login_button.pack(pady=5)
+        self.username_entry = QtWidgets.QLineEdit()
+        self.username_entry.setFixedWidth(300)
+        self.username_entry.setFixedHeight(30)
+        self.username_entry.setStyleSheet("""
+            QLineEdit {
+                border: 1px solid #ccc;
+                border-radius: 10px;
+                padding: 5px;
+                background-color: white;
+            }
+        """)
+        username_layout.addWidget(self.username_entry)
+        right_layout.addLayout(username_layout)
+        right_layout.addSpacing(0)
+
+        password_layout = QtWidgets.QVBoxLayout()
+        self.label_3 = QtWidgets.QLabel("Password:")
+        self.label_3.setStyleSheet("color: #333;")
+        password_layout.addWidget(self.label_3)
+
+        self.password_entry = QtWidgets.QLineEdit()
+        self.password_entry.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.password_entry.setFixedWidth(300)
+        self.password_entry.setFixedHeight(30)
+        self.password_entry.setStyleSheet("""
+            QLineEdit {
+                border: 1px solid #ccc;
+                border-radius: 10px;
+                padding: 5px;
+                background-color: white;
+            }
+        """)
+        password_layout.addWidget(self.password_entry)
+        right_layout.addLayout(password_layout)
+        right_layout.addSpacing(30)
+
+        self.pushButton = QtWidgets.QPushButton("LOGIN")
+        self.pushButton.setFixedWidth(300)
+        self.pushButton.setFixedHeight(30)
+        self.pushButton.setStyleSheet("""
+            QPushButton {
+                background-color: #2ecc71;
+                color: white;
+                border: 2px solid #2ecc71;
+                border-radius: 15px;
+                padding: 8px 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #27ae60;
+                border: 2px solid #27ae60;
+            }
+            QPushButton:pressed {
+                background-color: #219653;
+                border: 2px solid #219653;
+            }
+        """)
+        right_layout.addWidget(self.pushButton, alignment=QtCore.Qt.AlignCenter)
+
+        main_layout.addWidget(right_widget)
+        MainWindow.setCentralWidget(self.centralwidget)
+
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "Library Management - Admin Login"))
+        self.label.setText(_translate("MainWindow", "Admin Login"))
+        self.label_2.setText(_translate("MainWindow", "Username:"))
+        self.label_3.setText(_translate("MainWindow", "Password:"))
+        self.pushButton.setText(_translate("MainWindow", "Login"))
+
+    def _center_window(self, width, height):
+        screen = self.screen().availableGeometry()
+        screen_width = screen.width()
+        screen_height = screen.height()
+        x = (screen_width - width) // 2
+        y = (screen_height - height) // 2
+        self.setGeometry(x, y, width, height)
 
     def handle_login(self):
-        username = self.username_entry.get().strip()
-        password = self.password_entry.get().strip()
+        username = self.username_entry.text().strip()
+        password = self.password_entry.text().strip()
 
         if not username or not password:
-            messagebox.showwarning(ERROR, MISSING_USER_OR_PASSWORD)
+            QtWidgets.QMessageBox.warning(self, ERROR, MISSING_USER_OR_PASSWORD)
             return
         try:
-            self.controller.get_user_by_username(self.root, username, password)
+            self.controller.get_user_by_username(self, username, password)
         except Exception as e:
-            messagebox.showerror("Lỗi hệ thống", f"Không thể đăng nhập: {str(e)}")
+            QtWidgets.QMessageBox.critical(self, "Lỗi hệ thống", f"Không thể đăng nhập: {str(e)}")
