@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout
+from PyQt5.QtCore import Qt
 
 class CreateTransactionLoanPanel(QWidget):
     def __init__(self, parent=None):
@@ -7,6 +8,14 @@ class CreateTransactionLoanPanel(QWidget):
 
         layout = QVBoxLayout(self)
 
-        label = QLabel("Tạo đơn thuê/mượn sách")
-        label.setStyleSheet("font-size: 20px; font-weight: bold; margin-top: 20px;")
+        label = QLabel("Create Transaction Loan")
+        label.setStyleSheet("""
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px;
+            border: none;
+            background-color: none;
+        """)
+        label.setAlignment(Qt.AlignCenter)
+
         layout.addWidget(label)

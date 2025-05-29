@@ -7,7 +7,7 @@ class NotificationModal(QDialog):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setModal(True)
-        self.setFixedSize(350, 150)
+        self.setFixedSize(250, 150)
 
         if icon_path:
             self.setWindowIcon(QIcon(icon_path))
@@ -29,14 +29,14 @@ class NotificationModal(QDialog):
 
 class ErrorModal(NotificationModal):
     def __init__(self, parent=None, message="An error has occurred"):
-        super().__init__(parent, message, "Error", color="#dc3545")  # Red
+        super().__init__(parent, message, "Error", color="#dc3545")
 
 
 class SuccessModal(NotificationModal):
     def __init__(self, parent=None, message="Operation successful"):
-        super().__init__(parent, message, "Success", color="#28a745")  # Green
+        super().__init__(parent, message, "Success", color="#28a745")
 
 
 class WarningModal(NotificationModal):
     def __init__(self, parent=None, message="This is a warning"):
-        super().__init__(parent, message, "Warning", color="#ffc107")  # Yellow
+        super().__init__(parent, message, "Warning", color="#ffc107")

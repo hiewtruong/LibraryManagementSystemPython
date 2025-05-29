@@ -1,14 +1,14 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PIL import Image
-from controllers.user_controller import UserController
 from lib.constants import MISSING_USER_OR_PASSWORD, ERROR
 import os
 import io
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self, controller):
+        self.dashboard = None
         super().__init__()
-        self.controller = UserController()
+        self.controller = controller
         self.setupUi(self)
         self._center_window(800, 400)
         self.setFixedSize(800, 400)
@@ -17,7 +17,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setWindowTitle("Library Management - Admin Login")
-        
+
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         main_layout = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -28,7 +28,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         left_widget.setFixedWidth(400)
         left_layout = QtWidgets.QVBoxLayout(left_widget)
         left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setAlignment(QtCore.Qt.AlignCenter) 
+        left_layout.setAlignment(QtCore.Qt.AlignCenter)
 
         image_path = os.path.join("resources", "img", "career-planning.png")
         if os.path.exists(image_path):
@@ -38,11 +38,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             pixmap = QtGui.QPixmap()
             pixmap.loadFromData(buffer.getvalue())
             bg_label = QtWidgets.QLabel()
-            bg_label.setPixmap(pixmap.scaled(200, 200, QtCore.Qt.KeepAspectRatio)) 
+            bg_label.setPixmap(pixmap.scaled(200, 200, QtCore.Qt.KeepAspectRatio))
             bg_label.setAlignment(QtCore.Qt.AlignCenter)
             left_layout.addWidget(bg_label)
         else:
-            bg_label = QtWidgets.QLabel("Không tìm thấy ảnh")
+            bg_label = QtWidgets.QLabel("Not Found Image")
             bg_label.setStyleSheet("background-color: gray; color: white;")
             bg_label.setAlignment(QtCore.Qt.AlignCenter)
             left_layout.addWidget(bg_label)
@@ -51,7 +51,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         right_widget = QtWidgets.QWidget()
         right_layout = QtWidgets.QVBoxLayout(right_widget)
-        right_layout.setAlignment(QtCore.Qt.AlignCenter) 
+        right_layout.setAlignment(QtCore.Qt.AlignCenter)
         right_layout.setContentsMargins(20, 20, 20, 20)
         right_layout.setSpacing(10)
 
@@ -163,6 +163,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, ERROR, MISSING_USER_OR_PASSWORD)
             return
         try:
-            self.controller.get_user_by_username(self, username, password)
+            result = self.controller.get_user_by_username(self, username, password)
+            if result is not None:
+                self.dashboard = result
+                self.hide()
+                self.dashboard.show()
+                self.dashboard.raise_()
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Lỗi hệ thống", f"Không thể đăng nhập: {str(e)}")
+            QtWidgets.QMessageBox.critical(self, "Error System", f"Can't login: {str(e)}")

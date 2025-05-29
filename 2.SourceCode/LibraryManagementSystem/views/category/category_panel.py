@@ -1,14 +1,21 @@
-import tkinter as tk
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout
+from PyQt5.QtCore import Qt
 
-class CategoryPanel(tk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent, bg="white")
-        self.label = tk.Label(self, text="Quản lý Thể Loại", font=("Arial", 18, "bold"), bg="white")
-        self.label.pack(pady=20)
+class CategoryPanel(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setStyleSheet("background-color: white;")
 
-    def cleanup(self):
-        pass
+        layout = QVBoxLayout(self)
 
-    def destroy(self):
-        self.cleanup()
-        super().destroy()
+        label = QLabel("Manage Category")
+        label.setStyleSheet("""
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px;
+            border: none;
+            background-color: none;
+        """)
+        label.setAlignment(Qt.AlignCenter)
+
+        layout.addWidget(label)

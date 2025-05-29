@@ -11,3 +11,14 @@
 2.SourceCode/LibraryManagementSystem/views/category/__pycache__/
 2.SourceCode/LibraryManagementSystem/views/transactions_loan/__pycache__/
 2.SourceCode/LibraryManagementSystem/views/user/__pycache__/
+2.SourceCode/LibraryManagementSystem/domain/dto/book/__pycache__/
+2.SourceCode/LibraryManagementSystem/domain/dto/category/__pycache__/
+2.SourceCode/LibraryManagementSystem/domain/dto/transaction/__pycache__/
+2.SourceCode/LibraryManagementSystem/domain/dto/user/__pycache__/
+2.SourceCode/LibraryManagementSystem/domain/entities/__pycache__/
+2.SourceCode/LibraryManagementSystem/repositories/book/__pycache__/
+2.SourceCode/LibraryManagementSystem/repositories/category/__pycache__/
+2.SourceCode/LibraryManagementSystem/repositories/transaction_loan/__pycache__/
+2.SourceCode/LibraryManagementSystem/repositories/user/__pycache__/
+2.SourceCode/LibraryManagementSystem/services/transaction_loan/__pycache__/
+2.SourceCode/LibraryManagementSystem/services/user/__pycache__/

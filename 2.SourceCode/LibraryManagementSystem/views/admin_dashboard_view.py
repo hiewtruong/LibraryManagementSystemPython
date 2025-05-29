@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from domain.dto.user_login_dto import UserLoginDTO
+from domain.dto.user.user_login_dto import UserLoginDTO
 from views.book.book_panel import BookPanel
 from views.author.author_panel import AuthorPanel
 from views.category.category_panel import CategoryPanel

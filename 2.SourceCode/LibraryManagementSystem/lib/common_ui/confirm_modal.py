@@ -6,7 +6,7 @@ class ConfirmModal(QDialog):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setModal(True)
-        self.setFixedSize(350, 150)
+        self.setFixedSize(250, 150)
 
         self.result = None
 
