@@ -105,7 +105,6 @@ class TransactionLoanPanel(QWidget):
         main_layout.setStretch(main_layout.count() - 1, 1)
 
         self.table.doubleClicked.connect(self.show_detail_dialog)
-        # Không gọi load_data ở đây nữa
 
     def load_data(self):
         if self.controller:
