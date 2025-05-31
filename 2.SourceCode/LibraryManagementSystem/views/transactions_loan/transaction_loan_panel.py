@@ -3,6 +3,9 @@ from PyQt5.QtWidgets import (
     QComboBox, QTableWidget, QTableWidgetItem, QMessageBox, QHeaderView, QSizePolicy
 )
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QColor
+from datetime import datetime
+from lib.constants import TRANS_PAID
 from services.transaction_loan.transaction_loan_service import TransactionLoanService
 
 class TransactionLoanPanel(QWidget):
@@ -12,40 +15,68 @@ class TransactionLoanPanel(QWidget):
         self.parent = parent
         self.service = TransactionLoanService.get_instance()
 
-        self.setMinimumSize(1370, 800)
+        self.setMinimumSize(1370, 830)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(20, 10, 10, 10)  # Padding cho toàn bộ panel
-        main_layout.setSpacing(10)  # Khoảng cách giữa các thành phần
+        main_layout.setContentsMargins(20, 10, 10, 10)
+        main_layout.setSpacing(10)
 
         label = QLabel("Manage Transaction Loan")
         label.setStyleSheet("""
-            font-size: 20px;
+            font-size: 25px;
             font-weight: bold;
             border: none;
             padding-top: 10px;
+            padding-bottom: 10px;
             background-color: none;
         """)
         label.setAlignment(Qt.AlignLeft)
         main_layout.addWidget(label)
 
         search_layout = QHBoxLayout()
+        search_layout.setAlignment(Qt.AlignLeft)
+
+        search_label = QLabel("Search:")
+        search_label_font = QFont()
+        search_label_font.setPixelSize(13)
+        search_label.setFont(search_label_font)
+        search_label.setStyleSheet("border: none;")
+        search_label.setMaximumWidth(50) 
+
         self.search_column = QComboBox()
         self.search_column.addItems(["LoanTicketNumber", "UserName", "Email", "Phone"])
+        self.search_column.setMaximumWidth(180)
+        self.search_column.setMinimumHeight(25)
+        combo_font = QFont()
+        combo_font.setPixelSize(13)
+        self.search_column.setFont(combo_font)
+
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Enter keyword to search...")
-        self.search_button = QPushButton("Search")
+        self.search_input.setMaximumWidth(250)
+        self.search_input.setMinimumHeight(25)
+
+        self.search_button = QPushButton("Find")
+        self.search_button.setFixedWidth(70)
+        self.search_button.setFixedHeight(25)
+        self.search_button.setStyleSheet("""
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+        """)
         self.search_button.clicked.connect(self.search_transactions)
 
+        search_layout.addWidget(search_label)
         search_layout.addWidget(self.search_column)
         search_layout.addWidget(self.search_input)
         search_layout.addWidget(self.search_button)
+        search_layout.setSpacing(8)
         main_layout.addLayout(search_layout)
 
         self.table = QTableWidget()
-        self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["Loan Ticket", "User Name", "Email", "Phone", "Total Qty"])
+        self.table.setColumnCount(7)
+        self.table.setHorizontalHeaderLabels(["Loan Ticket", "User Name", "Email", "Phone", "Total Qty", "Status", "Return Loan Date"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.verticalHeader().setVisible(False)
@@ -55,10 +86,18 @@ class TransactionLoanPanel(QWidget):
             background-color: white;
             border: 0.5px solid;
         """)
-        self.table.setContentsMargins(10, 10, 10, 10)  # Padding cho nội dung bảng
+        self.table.setContentsMargins(10, 10, 10, 10)
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         self.table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        header_font = QFont()
+        header_font.setPixelSize(15)
+        header_font.setBold(True)
+        for i in range(self.table.columnCount()):
+            header_item = self.table.horizontalHeaderItem(i)
+            if header_item:
+                header_item.setFont(header_font)
 
         main_layout.addWidget(self.table)
         main_layout.setStretch(main_layout.count() - 1, 1)
@@ -69,29 +108,74 @@ class TransactionLoanPanel(QWidget):
         headers = self.service.get_all_transaction_headers("", "")
         self.table.setRowCount(0)
         self.table.setRowCount(len(headers))
+        data_font = QFont()
+        data_font.setPixelSize(13)
 
         for row_idx, header in enumerate(headers):
-            self.table.setItem(row_idx, 0, QTableWidgetItem(header.loan_ticket_number))  # Hiển thị string
-            self.table.setItem(row_idx, 1, QTableWidgetItem(header.use_name))
-            self.table.setItem(row_idx, 2, QTableWidgetItem(header.email))
-            self.table.setItem(row_idx, 3, QTableWidgetItem(header.phone))
-            self.table.setItem(row_idx, 4, QTableWidgetItem(str(header.total_qty)))
+            return_loan_date = header.get_loan_return_dt().date() if header.get_loan_return_dt() else None
+            return_loan_date_str = return_loan_date.strftime("%m-%d-%Y") if return_loan_date else "N/A"
+
+            items = [
+                QTableWidgetItem(header.loan_ticket_number),
+                QTableWidgetItem(header.use_name),
+                QTableWidgetItem(header.email),
+                QTableWidgetItem(header.phone),
+                QTableWidgetItem(str(header.total_qty)),
+                QTableWidgetItem(header.status_name),
+                QTableWidgetItem(return_loan_date_str)
+            ]
+            if header.expired == 1:
+                for item in items:
+                    item.setForeground(QColor("red"))
+            if header.status == TRANS_PAID:
+                for item in items:
+                    item.setForeground(QColor("green"))
+            for col_idx, item in enumerate(items):
+                item.setFont(data_font)
+                if col_idx == 4:
+                    item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+                elif col_idx == 5 or col_idx == 6:
+                    item.setTextAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+                self.table.setItem(row_idx, col_idx, item)
 
     def search_transactions(self):
         keyword = self.search_input.text().strip()
         column = self.search_column.currentText()
 
         if not keyword:
-            QMessageBox.warning(self, "Warning", "Please enter a keyword to search.")
+            self.load_data()
             return
 
         headers = self.service.get_all_transaction_headers(keyword, column)
         self.table.setRowCount(0)
         self.table.setRowCount(len(headers))
 
+        data_font = QFont()
+        data_font.setPixelSize(13)
+
         for row_idx, header in enumerate(headers):
-            self.table.setItem(row_idx, 0, QTableWidgetItem(header.loan_ticket_number))  # Hiển thị string
-            self.table.setItem(row_idx, 1, QTableWidgetItem(header.use_name))
-            self.table.setItem(row_idx, 2, QTableWidgetItem(header.email))
-            self.table.setItem(row_idx, 3, QTableWidgetItem(header.phone))
-            self.table.setItem(row_idx, 4, QTableWidgetItem(str(header.total_qty)))
+            return_loan_date = header.get_loan_return_dt().date() if header.get_loan_return_dt() else None
+            return_loan_date_str = return_loan_date.strftime("%m-%d-%Y") if return_loan_date else "N/A"
+
+            items = [
+                QTableWidgetItem(header.loan_ticket_number),
+                QTableWidgetItem(header.use_name),
+                QTableWidgetItem(header.email),
+                QTableWidgetItem(header.phone),
+                QTableWidgetItem(str(header.total_qty)),
+                QTableWidgetItem(header.status_name),
+                QTableWidgetItem(return_loan_date_str)
+            ]
+            if header.expired == 1:
+                for item in items:
+                    item.setForeground(QColor("red"))
+            if header.status == TRANS_PAID:
+                for item in items:
+                    item.setForeground(QColor("green"))
+            for col_idx, item in enumerate(items):
+                item.setFont(data_font)
+                if col_idx == 4:
+                    item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+                elif col_idx == 5 or col_idx == 6:
+                    item.setTextAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+                self.table.setItem(row_idx, col_idx, item)

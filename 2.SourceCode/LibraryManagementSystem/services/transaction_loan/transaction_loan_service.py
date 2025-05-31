@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from lib.constants import LOAN_BOOK_SUBJECT, TRANS_BORROW, TRANS_PAID
 from repositories.transaction_loan.i_transaction_loan_header_repository import ITransactionLoanHeaderRepository
@@ -56,9 +57,15 @@ class TransactionLoanService:
             headers = self.header_repo.get_all_trans_headers_by_keyword(keyword, column)
         else:
             headers = self.header_repo.get_all_trans_headers()
-
+        now = datetime.now().date()
         for h in headers:
-            h.status_name = "BORROW" if h.status == TRANS_BORROW else "PAID" if h.status == TRANS_PAID else "UNKNOWN"
+            if h.status == TRANS_BORROW:
+                h.set_status_name("BORROW")
+            if h.status == TRANS_PAID:
+                h.set_status_name("PAID")
+            date_return =  h.loan_return_dt.date()
+            if now > date_return and h.status == TRANS_BORROW:
+                h.set_expired(1)
         return headers
 
     def get_transaction_details(self, header_id: int) -> List[TransactionLoanDetailDTO]:

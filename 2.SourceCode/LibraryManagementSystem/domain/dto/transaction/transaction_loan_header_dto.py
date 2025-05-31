@@ -1,7 +1,7 @@
 from datetime import datetime
 
 class TransactionLoanHeaderDTO:
-    def __init__(self, loan_header_id=None, loan_ticket_number=None, user_id=None, use_name=None, email=None, phone=None, total_qty=0, loan_dt=None, loan_return_dt=None, created_by=None, created_dt=None, update_by=None, update_dt=None, status=0, status_name=None):
+    def __init__(self, loan_header_id=None, loan_ticket_number=None, user_id=None, use_name=None, email=None, phone=None, total_qty=0, loan_dt=None, loan_return_dt=None, created_by=None, created_dt=None, update_by=None, update_dt=None, status=0, status_name=None, expired=0):
         self.loan_header_id = loan_header_id
         self.loan_ticket_number = loan_ticket_number
         self.user_id = user_id
@@ -17,6 +17,7 @@ class TransactionLoanHeaderDTO:
         self.update_dt = update_dt if update_dt else datetime.now()
         self.status = status
         self.status_name = status_name
+        self.expired = expired
 
     def get_loan_header_id(self):
         return self.loan_header_id
@@ -107,6 +108,12 @@ class TransactionLoanHeaderDTO:
 
     def set_status_name(self, status_name):
         self.status_name = status_name
+    
+    def get_expired(self):
+        return self.expired
+
+    def set_expired(self, expired):
+        self.expired = expired
 
     def from_row(row):
         return TransactionLoanHeaderDTO(
