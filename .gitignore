@@ -22,3 +22,5 @@
 2.SourceCode/LibraryManagementSystem/repositories/user/__pycache__/
 2.SourceCode/LibraryManagementSystem/services/transaction_loan/__pycache__/
 2.SourceCode/LibraryManagementSystem/services/user/__pycache__/
+2.SourceCode/LibraryManagementSystem/services/book/__pycache__/
+2.SourceCode/LibraryManagementSystem/services/category/__pycache__/

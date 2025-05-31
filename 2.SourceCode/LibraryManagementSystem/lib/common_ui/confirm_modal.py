@@ -6,7 +6,7 @@ class ConfirmModal(QDialog):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setModal(True)
-        self.setFixedSize(250, 150)
+        self.setFixedSize(300, 130)
 
         self.result = None
 
@@ -16,8 +16,9 @@ class ConfirmModal(QDialog):
         layout = QVBoxLayout()
 
         self.label = QLabel(message)
-        self.label.setAlignment(Qt.AlignCenter)
-        self.label.setStyleSheet("font-size: 14px; padding: 10px;")
+        self.label.setWordWrap(True)
+        self.label.setAlignment(Qt.AlignLeft)
+        self.label.setStyleSheet("font-size: 14px; padding: 10px; border: none")
         layout.addWidget(self.label)
 
         button_layout = QHBoxLayout()

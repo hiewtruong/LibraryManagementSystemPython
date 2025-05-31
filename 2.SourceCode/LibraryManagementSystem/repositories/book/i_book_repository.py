@@ -13,5 +13,5 @@ class IBookRepository(ABC):
         pass
 
     @abstractmethod
-    def decrement_qty_allocated(self, loan_details: List[TransactionLoanDetailRequestDTO]) -> None:
+    def decrement_qty_allocated(self, loan_details: List[TransactionLoanDetailRequestDTO],conn=None) -> None:
         pass

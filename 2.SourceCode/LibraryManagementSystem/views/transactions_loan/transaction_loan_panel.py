@@ -7,6 +7,7 @@ from PyQt5.QtGui import QFont, QColor
 from datetime import datetime
 from lib.constants import TRANS_PAID
 from services.transaction_loan.transaction_loan_service import TransactionLoanService
+from domain.dto.transaction.transaction_loan_header_request_dto import TransactionLoanHeaderRequestDTO
 
 class TransactionLoanPanel(QWidget):
     def __init__(self, parent=None):
@@ -14,6 +15,8 @@ class TransactionLoanPanel(QWidget):
         self.setStyleSheet("background-color: white;")
         self.parent = parent
         self.service = TransactionLoanService.get_instance()
+        self.controller = None
+        self.headers = []
 
         self.setMinimumSize(1370, 830)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -24,11 +27,10 @@ class TransactionLoanPanel(QWidget):
 
         label = QLabel("Manage Transaction Loan")
         label.setStyleSheet("""
-            font-size: 25px;
+            font-size: 20px;
             font-weight: bold;
             border: none;
             padding-top: 10px;
-            padding-bottom: 10px;
             background-color: none;
         """)
         label.setAlignment(Qt.AlignLeft)
@@ -37,12 +39,12 @@ class TransactionLoanPanel(QWidget):
         search_layout = QHBoxLayout()
         search_layout.setAlignment(Qt.AlignLeft)
 
-        search_label = QLabel("Search:")
+        search_label = QLabel("Search")
         search_label_font = QFont()
         search_label_font.setPixelSize(13)
         search_label.setFont(search_label_font)
         search_label.setStyleSheet("border: none;")
-        search_label.setMaximumWidth(50) 
+        search_label.setMaximumWidth(50)
 
         self.search_column = QComboBox()
         self.search_column.addItems(["LoanTicketNumber", "UserName", "Email", "Phone"])
@@ -57,7 +59,7 @@ class TransactionLoanPanel(QWidget):
         self.search_input.setMaximumWidth(250)
         self.search_input.setMinimumHeight(25)
 
-        self.search_button = QPushButton("Find")
+        self.search_button = QPushButton("Search")
         self.search_button.setFixedWidth(70)
         self.search_button.setFixedHeight(25)
         self.search_button.setStyleSheet("""
@@ -102,16 +104,21 @@ class TransactionLoanPanel(QWidget):
         main_layout.addWidget(self.table)
         main_layout.setStretch(main_layout.count() - 1, 1)
 
-        self.load_data()
+        self.table.doubleClicked.connect(self.show_detail_dialog)
+        # Không gọi load_data ở đây nữa
 
     def load_data(self):
-        headers = self.service.get_all_transaction_headers("", "")
+        if self.controller:
+            self.controller.load_transaction_headers(self)
+
+    def update_table(self, headers):
+        self.headers = headers
         self.table.setRowCount(0)
-        self.table.setRowCount(len(headers))
+        self.table.setRowCount(len(self.headers))
         data_font = QFont()
         data_font.setPixelSize(13)
 
-        for row_idx, header in enumerate(headers):
+        for row_idx, header in enumerate(self.headers):
             return_loan_date = header.get_loan_return_dt().date() if header.get_loan_return_dt() else None
             return_loan_date_str = return_loan_date.strftime("%m-%d-%Y") if return_loan_date else "N/A"
 
@@ -127,14 +134,14 @@ class TransactionLoanPanel(QWidget):
             if header.expired == 1:
                 for item in items:
                     item.setForeground(QColor("red"))
-            if header.status == TRANS_PAID:
+            if getattr(header, 'status', None) == TRANS_PAID:
                 for item in items:
                     item.setForeground(QColor("green"))
             for col_idx, item in enumerate(items):
                 item.setFont(data_font)
                 if col_idx == 4:
                     item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                elif col_idx == 5 or col_idx == 6:
+                elif col_idx == 5:
                     item.setTextAlignment(Qt.AlignCenter | Qt.AlignVCenter)
                 self.table.setItem(row_idx, col_idx, item)
 
@@ -143,17 +150,20 @@ class TransactionLoanPanel(QWidget):
         column = self.search_column.currentText()
 
         if not keyword:
-            self.load_data()
+            QMessageBox.warning(self, "Warning", "Please enter a keyword to search.")
             return
 
-        headers = self.service.get_all_transaction_headers(keyword, column)
-        self.table.setRowCount(0)
-        self.table.setRowCount(len(headers))
+        if self.controller:
+            self.controller.search_transaction_headers(self, keyword, column)
 
+    def update_search_table(self, headers):
+        self.headers = headers
+        self.table.setRowCount(0)
+        self.table.setRowCount(len(self.headers))
         data_font = QFont()
         data_font.setPixelSize(13)
 
-        for row_idx, header in enumerate(headers):
+        for row_idx, header in enumerate(self.headers):
             return_loan_date = header.get_loan_return_dt().date() if header.get_loan_return_dt() else None
             return_loan_date_str = return_loan_date.strftime("%m-%d-%Y") if return_loan_date else "N/A"
 
@@ -169,13 +179,20 @@ class TransactionLoanPanel(QWidget):
             if header.expired == 1:
                 for item in items:
                     item.setForeground(QColor("red"))
-            if header.status == TRANS_PAID:
+            if getattr(header, 'status', None) == TRANS_PAID:
                 for item in items:
                     item.setForeground(QColor("green"))
             for col_idx, item in enumerate(items):
                 item.setFont(data_font)
                 if col_idx == 4:
                     item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                elif col_idx == 5 or col_idx == 6:
+                elif col_idx == 5:
                     item.setTextAlignment(Qt.AlignCenter | Qt.AlignVCenter)
                 self.table.setItem(row_idx, col_idx, item)
+
+    def show_detail_dialog(self, item):
+        row = self.table.currentRow()
+        if row >= 0 and row < len(self.headers):
+            header_dto = self.headers[row]
+            if self.controller:
+                self.controller.view_transaction_detail(self, self, header_dto)

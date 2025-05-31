@@ -80,22 +80,22 @@ class TransactionLoanHeaderRepository(ITransactionLoanHeaderRepository):
             request_dto.total_qty,
             datetime.now().date(),
             request_dto.loan_return_dt,
-            0,  # IsDelete
+            0,
             "admin@uit.com",
             datetime.now(),
             "admin@uit.com",
             datetime.now(),
-            0  # Status
+            0
         ))
         conn.commit()
         return cursor.lastrowid
 
-    def update_status_revoke(self, loan_header_id: int) -> None:
+    def update_status_revoke(self, loan_header_id: int, conn=None) -> None:
+        if conn is None:
+            conn = get_connection()
         query = "UPDATE TransactionLoanHeaders SET Status = 1 WHERE LoanHeaderID = ?"
-        conn = self.db.get_connection()
         cursor = conn.cursor()
         cursor.execute(query, (loan_header_id,))
-        conn.commit()
 
     def find_trans_header_loan(self, loan_header_id: int) -> Optional[TransactionLoanHeader]:
         query = '''

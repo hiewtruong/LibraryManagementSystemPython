@@ -6,8 +6,16 @@ from services.user.i_user_service import IUserService
 from domain.dto.user.user_login_dto import UserLoginDTO
 
 class UserService(IUserService):
+    _instance = None
+
     def __init__(self, user_repository: IUserRepository):
         self.user_repository = user_repository
+
+    @classmethod
+    def get_instance(cls, user_repository: IUserRepository = None):
+        if cls._instance is None:
+            cls._instance = cls(user_repository=user_repository)
+        return cls._instance
 
     def get_user_by_username(self, username: str, password_input: str, parent=None) -> UserLoginDTO or None:
         try:

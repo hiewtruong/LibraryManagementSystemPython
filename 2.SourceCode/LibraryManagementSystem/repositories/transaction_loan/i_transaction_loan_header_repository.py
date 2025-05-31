@@ -20,7 +20,7 @@ class ITransactionLoanHeaderRepository(ABC):
         pass
 
     @abstractmethod
-    def update_status_revoke(self, loan_header_id: int) -> None:
+    def update_status_revoke(self, loan_header_id: int, conn: any=None) -> None:
         pass
 
     @abstractmethod

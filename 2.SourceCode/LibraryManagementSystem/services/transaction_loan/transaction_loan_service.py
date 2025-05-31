@@ -13,7 +13,7 @@ from domain.dto.transaction.transaction_loan_header_revoke_dto import Transactio
 from domain.dto.transaction.transaction_send_email_dto import TransactionSendEmailDTO
 from domain.dto.book.book_send_email_dto import BookSendEmail
 from domain.entities.transaction_loan_header import TransactionLoanHeader
-from db_utils import begin_transaction, commit, rollback, close
+from db_utils.database_core import DbUtils 
 from lib.email_utils import send_email, generate_loan_email_content
 
 
@@ -75,10 +75,10 @@ class TransactionLoanService:
         for detail in details:
             genre_ids = detail.genre_category.split(",") if detail.genre_category else []
             genre_names = [
-                cat.name for gid in genre_ids
+                cat.get_name_category() for gid in genre_ids
                 if (cat := next((c for c in categories if c.genre_category_id == int(gid)), None))
             ]
-            detail.genre_category = ",".join(genre_names)
+            detail.genre_category = ", ".join(genre_names)
         return details
 
     def create_transaction(self, request: TransactionLoanHeaderRequestDTO):
@@ -100,14 +100,13 @@ class TransactionLoanService:
 
     def revoke_transaction(self, request: TransactionLoanHeaderRevokeDTO):
         try:
-            begin_transaction()
-            self.header_repo.update_status_revoke(request.loan_header_id)
-            self.book_repo.decrement_qty_allocated(request.loan_details)
-            commit()
+            with DbUtils.transaction() as conn:
+                self.header_repo.update_status_revoke(request.loan_header_id, conn=conn)
+                self.book_repo.decrement_qty_allocated(request.loan_details,conn=conn)
         except Exception as e:
-            rollback()
+            raise
         finally:
-            close()
+            pass
 
     def _prepare_email_data(self, header_id: int, details: List) -> TransactionSendEmailDTO:
         header: TransactionLoanHeader = self.header_repo.find_trans_header_loan(header_id)

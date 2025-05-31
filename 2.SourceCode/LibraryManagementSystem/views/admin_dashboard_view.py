@@ -7,6 +7,7 @@ from views.transactions_loan.create_transaction_loan_panel import CreateTransact
 from views.transactions_loan.transaction_loan_panel import TransactionLoanPanel
 from views.user.user_panel import UserPanel
 from lib.common_ui.confirm_modal import ConfirmModal
+from controllers.transaction_loan_controller import TransactionLoanController
 
 class Ui_AdminDashboard(QtWidgets.QMainWindow):
     def __init__(self, user_dto):
@@ -16,6 +17,7 @@ class Ui_AdminDashboard(QtWidgets.QMainWindow):
         self._center_window(1600, 900)
         self.setFixedSize(1600, 900)
         self.current_panel = None
+        self.controller = None
         self._connect_signals()
 
     def setupUi(self, MainWindow):
@@ -84,36 +86,51 @@ class Ui_AdminDashboard(QtWidgets.QMainWindow):
         self.clear_content()
         self.current_panel = BookPanel(self.ui.frame_3)
         self.current_panel.setObjectName("content_panel")
+        self.current_panel.controller = self.controller 
         self.current_panel.show()
+        if hasattr(self.current_panel, 'load_data'):
+            self.current_panel.load_data()
 
     def show_author_panel(self):
         self.clear_content()
         self.current_panel = AuthorPanel(self.ui.frame_3)
         self.current_panel.setObjectName("content_panel")
+        self.current_panel.controller = self.controller
         self.current_panel.show()
+        if hasattr(self.current_panel, 'load_data'):
+            self.current_panel.load_data()
 
     def show_category_panel(self):
         self.clear_content()
         self.current_panel = CategoryPanel(self.ui.frame_3)
         self.current_panel.setObjectName("content_panel")
+        self.current_panel.controller = self.controller
         self.current_panel.show()
+        if hasattr(self.current_panel, 'load_data'):
+            self.current_panel.load_data()
 
     def show_user_panel(self):
         self.clear_content()
         self.current_panel = UserPanel(self.ui.frame_3)
         self.current_panel.setObjectName("content_panel")
+        self.current_panel.controller = self.controller 
         self.current_panel.show()
+        if hasattr(self.current_panel, 'load_data'):
+            self.current_panel.load_data()
 
     def show_transaction_loan_panel(self):
         self.clear_content()
         self.current_panel = TransactionLoanPanel(self.ui.frame_3)
         self.current_panel.setObjectName("content_panel")
+        self.current_panel.controller = TransactionLoanController(self)
         self.current_panel.show()
+        self.current_panel.load_data() 
 
     def show_create_transaction_loan_panel(self):
         self.clear_content()
         self.current_panel = CreateTransactionLoanPanel(self.ui.frame_3)
         self.current_panel.setObjectName("content_panel")
+        self.current_panel.controller = TransactionLoanController(self) 
         self.current_panel.show()
 
     def _confirm_exit(self):

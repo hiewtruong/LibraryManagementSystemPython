@@ -48,15 +48,14 @@ class BookRepository(IBookRepository):
         finally:
             close()
 
-    def decrement_qty_allocated(self, loan_details: List[TransactionLoanDetailRequestDTO]) -> None:
+    def decrement_qty_allocated(self, loan_details: list[TransactionLoanDetailRequestDTO], conn=None) -> None:
         sql = "UPDATE Books SET QtyAllocated = QtyAllocated - 1 WHERE BookID = ?"
-        conn = get_connection()
+        if conn is None:
+            conn = get_connection()
         try:
             cursor = conn.cursor()
             for detail in loan_details:
-                cursor.execute(sql, (detail.loan_book_id,))
-            conn.commit()
+                cursor.execute(sql, (detail.load_book_id))
         except Exception as e:
             print(f"Error decrementing QtyAllocated: {e}")
-        finally:
-            close()
+            raise 

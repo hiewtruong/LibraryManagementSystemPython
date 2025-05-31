@@ -7,7 +7,7 @@ class CategoryRepository(ICategoryRepository):
     def get_all_genre_categories(self) -> List[GenreCategory]:
         genre_categories = []
         query = """
-            SELECT GenreCategoryID, NameCategory, GenreCategory, IsDelete, 
+            SELECT GenreCategoryID, NameCategory, GenreCategory, 
                    CreatedDt, CreatedBy, UpdateDt, UpdateBy
             FROM GenreCategories
             WHERE IsDelete = 0
@@ -24,11 +24,10 @@ class CategoryRepository(ICategoryRepository):
                     genre_category_id=row[0],
                     name_category=row[1],
                     genre_category=row[2],
-                    is_delete=row[3],
-                    created_dt=row[4],
-                    created_by=row[5],
-                    update_dt=row[6],
-                    update_by=row[7]
+                    created_dt=row[3],
+                    created_by=row[4],
+                    update_dt=row[5],
+                    update_by=row[6]
                 )
                 genre_categories.append(genre_category)
 

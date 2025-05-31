@@ -16,7 +16,7 @@ class NotificationModal(QDialog):
 
         self.label = QLabel(message)
         self.label.setAlignment(Qt.AlignCenter)
-        self.label.setStyleSheet("font-size: 14px; padding: 10px;")
+        self.label.setStyleSheet("font-size: 14px; padding: 10px; border:none")
         layout.addWidget(self.label)
 
         close_button = QPushButton("OK")

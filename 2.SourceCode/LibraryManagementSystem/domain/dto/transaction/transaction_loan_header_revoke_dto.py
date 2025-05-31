@@ -1,5 +1,8 @@
+from domain.dto.transaction.transaction_loan_detail_request_dto import TransactionLoanDetailRequestDTO
+
+
 class TransactionLoanHeaderRevokeDTO:
-    def __init__(self, loan_header_id=None, loan_details=None):
+    def __init__(self, loan_header_id=None, loan_details:TransactionLoanDetailRequestDTO=[]):
         self.loan_header_id = loan_header_id
         self.loan_details = loan_details if loan_details is not None else []
 
