@@ -1,9 +1,11 @@
+from time import localtime, strftime
 from typing import List, Optional
 import datetime  
 from db_utils import get_connection, close
 from domain.dto.transaction.transaction_loan_header_dto import TransactionLoanHeaderDTO
 from domain.dto.transaction.transaction_loan_header_request_dto import TransactionLoanHeaderRequestDTO
 from domain.entities.transaction_loan_header import TransactionLoanHeader
+from lib.constants import ADMIN
 from repositories.transaction_loan.i_transaction_loan_header_repository import ITransactionLoanHeaderRepository
 
 class TransactionLoanHeaderRepository(ITransactionLoanHeaderRepository):
@@ -65,30 +67,39 @@ class TransactionLoanHeaderRepository(ITransactionLoanHeaderRepository):
 
         return [TransactionLoanHeaderDTO.from_row(row) for row in rows]
 
-    def create_transaction_loan_header(self, request_dto: TransactionLoanHeaderRequestDTO) -> int:
-        loan_ticket_number = f"LMS-{datetime.now().strftime('%d%m%y-%H:%M:%S')}"
-        query = '''
-        INSERT INTO TransactionLoanHeaders 
-        (LoanTicketNumber, UserID_FK, TotalQty, LoanDt, LoanReturnDt, IsDelete, CreatedBy, CreatedDt, UpdateBy, UpdateDt, Status) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        '''
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute(query, (
-            loan_ticket_number,
-            request_dto.user_id,
-            request_dto.total_qty,
-            datetime.now().date(),
-            request_dto.loan_return_dt,
-            0,
-            "admin@uit.com",
-            datetime.now(),
-            "admin@uit.com",
-            datetime.now(),
-            0
-        ))
-        conn.commit()
-        return cursor.lastrowid
+    def create_transaction_loan_header(self, request_dto: TransactionLoanHeaderRequestDTO,conn=None) -> int:
+        try:
+            if conn is None:
+                conn = get_connection()
+            now = localtime()
+            loan_ticket_number = f"LMS-{datetime.datetime.now().strftime('%d%m%y-%H:%M:%S')}"
+            query = '''
+            INSERT INTO TransactionLoanHeaders 
+            (LoanTicketNumber, UserID_FK, TotalQty, LoanDt, LoanReturnDt, IsDelete, CreatedBy, CreatedDt, UpdateBy, UpdateDt, Status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            '''
+            query_get_id = "SELECT @@IDENTITY AS ID;"
+            cursor = conn.cursor()
+            cursor.execute(query, (
+                loan_ticket_number,
+                request_dto.user_id,
+                request_dto.total_qty,
+                strftime("%Y-%m-%d %H:%M:%S", now),
+                request_dto.loan_return_dt,
+                0,
+                ADMIN,
+                strftime("%Y-%m-%d %H:%M:%S", now),
+                ADMIN,
+                strftime("%Y-%m-%d %H:%M:%S", now),
+                0
+            ))
+            
+            cursor.execute(query_get_id)
+            header_id = cursor.fetchone()[0] 
+            return header_id
+        except Exception as e:
+            print(f"Error create_transaction_loan_header: {e}")
+            raise
 
     def update_status_revoke(self, loan_header_id: int, conn=None) -> None:
         if conn is None:

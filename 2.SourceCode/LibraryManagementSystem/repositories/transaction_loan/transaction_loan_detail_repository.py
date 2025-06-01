@@ -1,4 +1,5 @@
 # repositories/transaction_loan_detail/transaction_loan_detail_repository.py
+from time import localtime, strftime
 from typing import List
 from domain.dto.transaction.transaction_loan_detail_dto import TransactionLoanDetailDTO
 from domain.dto.transaction.transaction_loan_detail_request_dto import TransactionLoanDetailRequestDTO
@@ -46,29 +47,27 @@ class TransactionLoanDetailRepository(ITransactionLoanDetailRepository):
             close()
         return result
 
-    def create_transaction_loan_details(self, header_id: int, loan_details: List[TransactionLoanDetailRequestDTO]) -> None:
+    def create_transaction_loan_details(self, header_id: int, loan_details: List[TransactionLoanDetailRequestDTO],conn=None) -> None:
         sql = """
             INSERT INTO TransactionLoanDetails 
             (LoanHeaderID, LoanBookID, CreatedDt, CreatedBy, UpdateDt, UpdateBy, IsDelete)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """
-        conn = None
-        try:
+        if conn is None:
             conn = get_connection()
+        try:
             cursor = conn.cursor()
-            now = datetime.datetime.now()
+            now = localtime()
             for detail in loan_details:
                 cursor.execute(sql, (
                     header_id,
-                    detail.loan_book_id,
-                    now,
+                    detail.load_book_id,
+                    strftime("%Y-%m-%d %H:%M:%S", now),
                     ADMIN,
-                    now,
+                    strftime("%Y-%m-%d %H:%M:%S", now),
                     ADMIN,
                     0
                 ))
-            conn.commit()
         except Exception as e:
-            raise Exception(f"[TransactionLoanDetailRepository.create_transaction_loan_details] {str(e)}")
-        finally:
-            close()
+            print(f"Error create_transaction_loan_details: {e}")
+            raise

@@ -36,7 +36,20 @@ class UserRepository(IUserRepository):
     def get_all_users_customer(self) -> List[UserRoleDTO]:
         user_list = []
         sql = """
-            SELECT u.*, r.RoleName, r.IsAdmin
+                SELECT 
+                u.UserID,
+                u.FirstName,
+                u.LastName,
+                u.UserName,
+                u.Password,
+                u.Gender,
+                u.Email,
+                u.Phone,
+                u.Address,
+                u.UserRoleID_FK,
+                u.IsDelete,
+                r.RoleName,
+                r.IsAdmin
             FROM Users u
             JOIN UserRoles r ON u.UserRoleID_FK = r.UserRoleID
             WHERE u.IsDelete = 0 AND r.IsAdmin = 0
@@ -45,11 +58,13 @@ class UserRepository(IUserRepository):
         conn = None
         try:
             conn = get_connection()
+            if conn is None:
+                raise RuntimeError("Database connection failed.")
             cursor = conn.cursor()
             cursor.execute(sql)
             rows = cursor.fetchall()
             for row in rows:
-                user = UserRoleDTO(*row)
+                user = UserRoleDTO.from_row(row)
                 user_list.append(user)
         except Exception as e:
             raise RuntimeError(f"Error retrieving users: {str(e)}")
@@ -60,7 +75,20 @@ class UserRepository(IUserRepository):
     def get_all_users_customer_by_search(self, keyword: str, column: str) -> List[UserRoleDTO]:
         user_list = []
         sql_template = """
-            SELECT u.*, r.RoleName, r.IsAdmin
+            SELECT 
+                u.UserID,
+                u.FirstName,
+                u.LastName,
+                u.UserName,
+                u.Password,
+                u.Gender,
+                u.Email,
+                u.Phone,
+                u.Address,
+                u.UserRoleID_FK,
+                u.IsDelete,
+                r.RoleName,
+                r.IsAdmin
             FROM Users u
             JOIN UserRoles r ON u.UserRoleID_FK = r.UserRoleID
             WHERE u.IsDelete = 0 AND r.IsAdmin = 0
@@ -75,7 +103,7 @@ class UserRepository(IUserRepository):
             cursor.execute(sql, (f"%{keyword}%",))
             rows = cursor.fetchall()
             for row in rows:
-                user = UserRoleDTO(*row)
+                user = UserRoleDTO.from_row(row)
                 user_list.append(user)
         except Exception as e:
             raise RuntimeError(f"Error retrieving users by search: {str(e)}")

@@ -128,3 +128,25 @@ class Book:
 
     def set_update_by(self, update_by):
         self.update_by = update_by
+    
+    def from_row(row):
+        return Book(
+            book_id=row[0],
+            title=row[1],
+            author=row[2],
+            cover=row[3],
+            landing_page=row[4],
+            hashtag=row[5],
+            genre_category=row[6],
+            publisher=row[7],
+            publish_year=row[8],
+            location=row[9],
+            is_display=row[10],
+            qty_oh=row[11],
+            qty_allocated=row[12],
+            is_deleted=row[13],
+            created_dt=row[14],
+            created_by=row[15],
+            update_dt=row[16],
+            update_by=row[17]
+        )

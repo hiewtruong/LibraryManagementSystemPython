@@ -16,7 +16,7 @@ class ITransactionLoanHeaderRepository(ABC):
         pass
 
     @abstractmethod
-    def create_transaction_loan_header(self, request_dto: TransactionLoanHeaderRequestDTO) -> int:
+    def create_transaction_loan_header(self, request_dto: TransactionLoanHeaderRequestDTO, conn: any=None) -> int:
         pass
 
     @abstractmethod

@@ -11,5 +11,5 @@ class ITransactionLoanDetailRepository(ABC):
         pass
 
     @abstractmethod
-    def create_transaction_loan_details(self, header_id: int, loan_details: List[TransactionLoanDetailRequestDTO]) -> None:
+    def create_transaction_loan_details(self, header_id: int, loan_details: List[TransactionLoanDetailRequestDTO],conn: None) -> None:
         pass

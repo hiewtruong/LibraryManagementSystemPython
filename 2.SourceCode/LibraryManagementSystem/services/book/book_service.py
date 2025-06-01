@@ -28,7 +28,6 @@ class BookService:
         books: List[Book] = self.book_repository.get_all_books()
         categories: List[GenreCategory] = self.category_repository.get_all_genre_categories()
         result: List[BookTransactionLoanDTO] = []
-
         for book in books:
             dto = BookTransactionLoanDTO(
                 book_id=book.book_id,

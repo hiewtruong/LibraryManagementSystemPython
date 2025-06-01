@@ -33,7 +33,6 @@ class TransactionLoanDetailDialog(QDialog):
         self.setFixedSize(800, 450)
         main_layout = QVBoxLayout(self)
 
-        # Header panel
         header_panel = QFrame()
         header_panel.setStyleSheet("""
             QFrame {

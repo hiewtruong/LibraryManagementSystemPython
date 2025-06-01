@@ -83,20 +83,20 @@ class TransactionLoanService:
 
     def create_transaction(self, request: TransactionLoanHeaderRequestDTO):
         try:
-            begin_transaction()
-            header_id = self.header_repo.create_transaction_loan_header(request)
-            self.detail_repo.create_transaction_loan_details(header_id, request.loan_details)
-            self.book_repo.update_qty_allocated(request.loan_details)
-            commit()
+            with DbUtils.transaction() as conn:
+                header_id = self.header_repo.create_transaction_loan_header(request,conn)
+                self.detail_repo.create_transaction_loan_details(header_id, request.loan_details,conn)
+                self.book_repo.update_qty_allocated(request.loan_details,conn)
+            
 
-            send_data = self._prepare_email_data(header_id, request.loan_details)
-            email_body = generate_loan_email_content(send_data)
-            subject = LOAN_BOOK_SUBJECT.format(send_data.loan_ticket_number)
-            send_email(send_data.email, subject, email_body)
+            # send_data = self._prepare_email_data(header_id, request.loan_details)
+            # email_body = generate_loan_email_content(send_data)
+            # subject = LOAN_BOOK_SUBJECT.format(send_data.loan_ticket_number)
+            # send_email(send_data.email, subject, email_body)
         except Exception as e:
-            rollback()
+            raise
         finally:
-            close()
+            pass
 
     def revoke_transaction(self, request: TransactionLoanHeaderRevokeDTO):
         try:

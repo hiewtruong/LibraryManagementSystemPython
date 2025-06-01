@@ -1,7 +1,11 @@
+from typing import List
+from domain.dto.user.user_dto import UserDTO
+from domain.dto.user.user_role_dto import UserRoleDTO
 from lib.notifier_utils import show_error
 from lib.crypto_utils import encrypt_password
 from lib.constants import NOT_FOUND_USER, ROLE_ADMIN, WRONG_PASSWORD
 from repositories.user.i_user_repository import IUserRepository
+from repositories.user.user_repository import UserRepository
 from services.user.i_user_service import IUserService
 from domain.dto.user.user_login_dto import UserLoginDTO
 
@@ -43,3 +47,10 @@ class UserService(IUserService):
             show_error(parent, WRONG_PASSWORD)
             return False
         return True
+    
+    def get_all_users_customer(self) -> List[UserRoleDTO]:
+        if not self.user_repository:
+            self.user_repository = UserRepository()
+        users = self.user_repository.get_all_users_customer()
+        return users
+

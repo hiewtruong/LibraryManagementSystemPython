@@ -91,3 +91,20 @@ class UserRoleDTO:
 
     def set_role_name(self, role_name):
         self.role_name = role_name
+
+    def from_row(row):
+        return UserRoleDTO(
+            user_id=row[0],
+            first_name=row[1],
+            last_name=row[2],
+            user_name=row[3],
+            password=row[4],
+            gender=row[5],
+            email=row[6],
+            phone=row[7],
+            address=row[8],
+            user_role_id_fk=row[9],
+            is_delete=row[10],
+            role_name=row[11],
+            is_admin=row[12]
+    )

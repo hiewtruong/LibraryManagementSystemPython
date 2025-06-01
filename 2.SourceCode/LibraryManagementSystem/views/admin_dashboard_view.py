@@ -132,6 +132,7 @@ class Ui_AdminDashboard(QtWidgets.QMainWindow):
         self.current_panel.setObjectName("content_panel")
         self.current_panel.controller = TransactionLoanController(self) 
         self.current_panel.show()
+        self.current_panel.load_data() 
 
     def _confirm_exit(self):
         modal = ConfirmModal(self, message="Are you sure you want to exit?", title="Confirm Exit")

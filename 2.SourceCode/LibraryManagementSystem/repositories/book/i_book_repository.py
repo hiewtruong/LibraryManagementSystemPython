@@ -9,7 +9,7 @@ class IBookRepository(ABC):
         pass
 
     @abstractmethod
-    def update_qty_allocated(self, loan_details: List[TransactionLoanDetailRequestDTO]) -> None:
+    def update_qty_allocated(self, loan_details: List[TransactionLoanDetailRequestDTO],conn=None) -> None:
         pass
 
     @abstractmethod
