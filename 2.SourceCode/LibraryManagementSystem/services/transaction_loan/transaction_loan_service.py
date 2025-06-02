@@ -87,10 +87,7 @@ class TransactionLoanService:
                 header_id = self.header_repo.create_transaction_loan_header(request,conn)
                 self.detail_repo.create_transaction_loan_details(header_id, request.loan_details,conn)
                 self.book_repo.update_qty_allocated(request.loan_details,conn)
-            send_data = self._prepare_email_data(header_id, request.loan_details)
-            email_body = generate_loan_email_content(send_data)
-            subject = LOAN_BOOK_SUBJECT.format(send_data.loan_ticket_number)
-            send_email(send_data.email, subject, email_body)
+                return header_id
         except Exception as e:
             raise
         finally:
@@ -106,8 +103,10 @@ class TransactionLoanService:
         finally:
             pass
 
-    def _prepare_email_data(self, header_id: int, details: List) -> TransactionSendEmailDTO:
+    def _prepare_email_data(self, header_id: int) -> TransactionSendEmailDTO:
+        print("header_id",header_id)
         header: TransactionLoanHeader = self.header_repo.find_trans_header_loan(header_id)
+        details: List[TransactionLoanDetailDTO] = self.detail_repo.get_transaction_loans_by_header_id(header_id)
         users = self.user_repo.get_all_users_customer()
         books = self.book_repo.get_all_books()
 
@@ -131,7 +130,13 @@ class TransactionLoanService:
                 title=book.title,
                 author=book.author
             )
-            for d in details if (book := book_map.get(d.load_book_id))
+            for d in details if (book := book_map.get(d.book_id))
         ]
         send_data.book_details = book_details
         return send_data
+    
+    def send_email_transaction(self, header_id: int) -> None:
+        send_data = self._prepare_email_data(header_id)
+        email_body = generate_loan_email_content(send_data)
+        subject = LOAN_BOOK_SUBJECT.format(send_data.loan_ticket_number)
+        send_email(send_data.email, subject, email_body)

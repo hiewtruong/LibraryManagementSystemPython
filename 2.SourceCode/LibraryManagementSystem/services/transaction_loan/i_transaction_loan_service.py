@@ -17,9 +17,13 @@ class ITransactionLoanService(ABC):
         pass
 
     @abstractmethod
-    def create_transaction_loan(self, request: TransactionLoanHeaderRequestDTO) -> None:
+    def create_transaction_loan(self, request: TransactionLoanHeaderRequestDTO) -> int:
         pass
 
     @abstractmethod
     def revoke_transaction_loan(self, request: TransactionLoanHeaderRevokeDTO) -> None:
+        pass
+
+    @abstractmethod
+    def send_email_transaction(self, loan_header_id: int) -> None:
         pass

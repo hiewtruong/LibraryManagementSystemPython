@@ -10,17 +10,16 @@ def send_email(to_email, subject, body):
     msg['From'] = "hieutg02198@gmail.com"
     msg['To'] = to_email
     msg['Subject'] = subject
-
     msg.attach(MIMEText(body, 'html'))
-
     try:
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()
-            server.login("hieutg02198@gmail.com", "nekmikwwmnfkzubas")
+            server.login("hieutg02198@gmail.com", "nekmikwmnfkzubas")
             server.send_message(msg)
         print("Email sent successfully")
     except Exception as e:
         print(f"Failed to send email: {e}")
+        
 @staticmethod
 def generate_account_email_content(user_name: str, password: str) -> str:
         return f"""

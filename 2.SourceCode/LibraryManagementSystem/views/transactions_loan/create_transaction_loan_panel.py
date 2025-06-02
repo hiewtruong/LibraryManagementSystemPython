@@ -518,7 +518,8 @@ class CreateTransactionLoanPanel(QWidget):
         if modal.exec_() == QtWidgets.QDialog.Accepted:
             try:
                 if self.controller:
-                    self.controller.create_transaction_loan(self.transaction_request_dto)
+                    header_id = self.controller.create_transaction_loan(self.transaction_request_dto)
+                    self.controller.send_email_create_transaction_loan(header_id)
                     show_success(parent=self.parent,message="Transaction created successfully!")
                     self.reset_form()
                     if self.controller:

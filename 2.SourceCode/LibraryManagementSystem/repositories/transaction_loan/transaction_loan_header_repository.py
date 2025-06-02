@@ -108,19 +108,20 @@ class TransactionLoanHeaderRepository(ITransactionLoanHeaderRepository):
         cursor = conn.cursor()
         cursor.execute(query, (loan_header_id,))
 
-    def find_trans_header_loan(self, loan_header_id: int) -> Optional[TransactionLoanHeader]:
-        query = '''
-        SELECT LoanHeaderID, LoanTicketNumber, UserID_FK, 
-               TotalQty, LoanDt, LoanReturnDt, 
-               IsDelete, CreatedBy, CreatedDt, UpdateBy, UpdateDt, Status
-        FROM TransactionLoanHeaders
-        WHERE IsDelete = 0 AND LoanHeaderID = ?
+    def find_trans_header_loan(self, loan_header_id: int) -> Optional[TransactionLoanHeaderDTO]:
+        query = f'''
+        SELECT T.LoanHeaderID, T.LoanTicketNumber, T.UserID_FK, 
+               U.UserName, U.Email, U.Phone, 
+               T.TotalQty, T.LoanDt, T.LoanReturnDt, 
+               T.CreatedBy, T.CreatedDt, T.UpdateBy, T.UpdateDt, T.Status
+        FROM TransactionLoanHeaders T
+        JOIN Users U ON T.UserID_FK = U.UserID
+        WHERE T.IsDelete = 0 AND T.LoanHeaderID = ?
         '''
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute(query, (loan_header_id,))
+        cursor.execute(query, (loan_header_id))
         row = cursor.fetchone()
-
         if row:
-            return TransactionLoanHeader.from_row(row)
+            return TransactionLoanHeaderDTO.from_row(row)
         return None

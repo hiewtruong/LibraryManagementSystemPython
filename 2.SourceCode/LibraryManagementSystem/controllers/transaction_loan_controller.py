@@ -80,6 +80,9 @@ class TransactionLoanController:
         if self.dashboard and hasattr(self.dashboard, 'current_panel'):
             panel = self.dashboard.current_panel
 
-    def create_transaction_loan(self, request:TransactionLoanHeaderRequestDTO)-> bool :
-        self.trans_service.create_transaction(request=request)
-        return True
+    def create_transaction_loan(self, request:TransactionLoanHeaderRequestDTO)-> int :
+        header_id = self.trans_service.create_transaction(request=request)
+        return header_id
+
+    def send_email_create_transaction_loan(self, header_id :int)-> None :
+         self.trans_service.send_email_transaction(header_id)
