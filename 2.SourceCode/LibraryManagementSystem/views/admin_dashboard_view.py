@@ -8,6 +8,7 @@ from views.transactions_loan.transaction_loan_panel import TransactionLoanPanel
 from views.user.user_panel import UserPanel
 from lib.common_ui.confirm_modal import ConfirmModal
 from controllers.transaction_loan_controller import TransactionLoanController
+from time import localtime, strftime
 
 class Ui_AdminDashboard(QtWidgets.QMainWindow):
     def __init__(self, user_dto):
@@ -193,6 +194,18 @@ class Ui_Form(object):
         self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_2.setObjectName("frame_2")
+
+        layout = QtWidgets.QHBoxLayout(self.frame_2)
+        layout.setContentsMargins(5, 3, 0, 0)
+        layout.setAlignment(QtCore.Qt.AlignLeft)
+
+        self.datetime_label = QtWidgets.QLabel(self.frame_2)
+        self.datetime_label.setStyleSheet("font-size: 14px; font-weight: bold; border: none;")
+        self.datetime_label.setAlignment(QtCore.Qt.AlignLeft)
+
+        current_time = strftime("%Y-%m-%d", localtime())
+        self.datetime_label.setText(f"DateTime: {current_time}")
+        layout.addWidget(self.datetime_label)
 
         self.frame_3 = QtWidgets.QFrame(Form)
         self.frame_3.setGeometry(QtCore.QRect(210, 50, 1381, 841))
