@@ -10,7 +10,9 @@ NOT_FOUND_USER = "Not found user '{}' in system"
 WRONG_PASSWORD = "Wrong password, please try again"
 
 EMAIL_SUBJECT_ACCOUNT_CREATED = "UIT-LMS | Your Account Has Been Successfully Created"
-LOAN_BOOK_SUBJECT = "Your Book Loan Confirmation - Ticket #'{}'"
+CREAT_LOAN_BOOK_SUBJECT = "UIT-LMS | Book Loan Confirmation - Ticket #'{}'"
+REMIND_LOAN_BOOK_SUBJECT = "UIT-LMS | Friendly Reminder: Book Return Deadline Approaching - Ticket #'{}'"
+REVOKE_LOAN_BOOK_SUBJECT = "UIT-LMS | Book Return Confirmation - Ticket #'{}'"
 
 TRANS_BORROW = 0
 TRANS_PAID = 1

@@ -27,3 +27,11 @@ class ITransactionLoanService(ABC):
     @abstractmethod
     def send_email_transaction(self, loan_header_id: int) -> None:
         pass
+
+    @abstractmethod
+    def send_email_revoke_transaction(self, loan_header_id: int) -> None:
+        pass
+
+    @abstractmethod
+    def send_email_remind_transaction(self, loan_header_id: int) -> None:
+        pass

@@ -86,3 +86,9 @@ class TransactionLoanController:
 
     def send_email_create_transaction_loan(self, header_id :int)-> None :
          self.trans_service.send_email_transaction(header_id)
+    
+    def send_email_revoke_transaction_loan(self, header_id :int)-> None :
+         self.trans_service.send_email_revoke_transaction(header_id)
+    
+    def send_email_remind_transaction_loan(self, header_id :int)-> None :
+         self.trans_service.send_email_remind_transaction(header_id)

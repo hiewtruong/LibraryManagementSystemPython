@@ -142,6 +142,7 @@ class TransactionLoanDetailDialog(QDialog):
                 request_loan.loan_details.append(detail_request)
             is_success = controller.revoke_transaction(request_loan)
             if is_success == True:
+                controller.send_email_revoke_transaction_loan(self.header_data.loan_header_id)
                 show_success(parent=self.parent,message="Revoke this trans successfully")
                 self.reloadDataSignal.emit()
                 self.close()
@@ -149,8 +150,11 @@ class TransactionLoanDetailDialog(QDialog):
                 show_error(parent=None,message="Can't revoke this trans. Please try again!")
 
     def remind_transaction(self):
+        from controllers.transaction_loan_controller import TransactionLoanController
         modal = ConfirmModal(self, message="Would you like to send an email to remind this trans?", title="Remind")
+        controller = TransactionLoanController()
         if modal.exec_() == QtWidgets.QDialog.Accepted:
+            controller.send_email_remind_transaction_loan(self.header_data.loan_header_id)
             self.reloadDataSignal.emit()
             self.close()
     

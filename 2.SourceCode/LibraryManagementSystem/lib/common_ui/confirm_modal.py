@@ -22,15 +22,19 @@ class ConfirmModal(QDialog):
         layout.addWidget(self.label)
 
         button_layout = QHBoxLayout()
+        button_layout.addStretch()
 
         self.yes_button = QPushButton("Yes")
         self.yes_button.setStyleSheet("background-color: #28a745; color: white; font-weight: bold;")
         self.yes_button.clicked.connect(self._on_yes)
+        self.yes_button.setFixedSize(60, 28)
+
         button_layout.addWidget(self.yes_button)
 
         self.no_button = QPushButton("No")
         self.no_button.setStyleSheet("background-color: #dc3545; color: white; font-weight: bold;")
         self.no_button.clicked.connect(self._on_no)
+        self.no_button.setFixedSize(60, 28)
         button_layout.addWidget(self.no_button)
 
         layout.addLayout(button_layout)

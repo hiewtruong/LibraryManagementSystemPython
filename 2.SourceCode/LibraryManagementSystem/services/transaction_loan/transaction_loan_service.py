@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List
-from lib.constants import LOAN_BOOK_SUBJECT, TRANS_BORROW, TRANS_PAID
+from lib.constants import CREAT_LOAN_BOOK_SUBJECT, REMIND_LOAN_BOOK_SUBJECT, REVOKE_LOAN_BOOK_SUBJECT, TRANS_BORROW, TRANS_PAID
 from repositories.transaction_loan.i_transaction_loan_header_repository import ITransactionLoanHeaderRepository
 from repositories.transaction_loan.i_transaction_loan_detail_repository import ITransactionLoanDetailRepository
 from repositories.book.i_book_repository import IBookRepository
@@ -14,7 +14,7 @@ from domain.dto.transaction.transaction_send_email_dto import TransactionSendEma
 from domain.dto.book.book_send_email_dto import BookSendEmail
 from domain.entities.transaction_loan_header import TransactionLoanHeader
 from db_utils.database_core import DbUtils 
-from lib.email_utils import send_email, generate_loan_email_content
+from lib.email_utils import generate_due_reminder_email_content, generate_return_email_content, send_email, generate_loan_email_content
 
 
 class TransactionLoanService:
@@ -104,7 +104,6 @@ class TransactionLoanService:
             pass
 
     def _prepare_email_data(self, header_id: int) -> TransactionSendEmailDTO:
-        print("header_id",header_id)
         header: TransactionLoanHeader = self.header_repo.find_trans_header_loan(header_id)
         details: List[TransactionLoanDetailDTO] = self.detail_repo.get_transaction_loans_by_header_id(header_id)
         users = self.user_repo.get_all_users_customer()
@@ -138,5 +137,18 @@ class TransactionLoanService:
     def send_email_transaction(self, header_id: int) -> None:
         send_data = self._prepare_email_data(header_id)
         email_body = generate_loan_email_content(send_data)
-        subject = LOAN_BOOK_SUBJECT.format(send_data.loan_ticket_number)
+        subject = CREAT_LOAN_BOOK_SUBJECT.format(send_data.loan_ticket_number)
         send_email(send_data.email, subject, email_body)
+        
+    def send_email_revoke_transaction(self, header_id: int) -> None:
+        send_data = self._prepare_email_data(header_id)
+        email_body = generate_return_email_content(send_data)
+        subject = REVOKE_LOAN_BOOK_SUBJECT.format(send_data.loan_ticket_number)
+        send_email(send_data.email, subject, email_body)
+    
+    def send_email_remind_transaction(self, header_id: int) -> None:
+        send_data = self._prepare_email_data(header_id)
+        email_body = generate_due_reminder_email_content(send_data)
+        subject = REMIND_LOAN_BOOK_SUBJECT.format(send_data.loan_ticket_number)
+        send_email(send_data.email, subject, email_body)
+

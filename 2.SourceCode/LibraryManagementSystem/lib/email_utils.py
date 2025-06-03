@@ -16,7 +16,6 @@ def send_email(to_email, subject, body):
             server.starttls()
             server.login("hieutg02198@gmail.com", "nekmikwmnfkzubas")
             server.send_message(msg)
-        print("Email sent successfully")
     except Exception as e:
         print(f"Failed to send email: {e}")
         
@@ -73,6 +72,81 @@ def generate_loan_email_content(transaction: TransactionSendEmailDTO) -> str:
         content += """
             </table>
             <br><hr>
+            <p style='font-size: 12px; color: gray;'>This is an automated message. Please do not reply to this email.</p>
+        </body></html>
+        """
+        return content
+
+@staticmethod
+def generate_return_email_content(transaction: TransactionSendEmailDTO) -> str:
+        return_dt = transaction.loan_return_dt.strftime("%m/%d/%Y") if isinstance(transaction.loan_return_dt, datetime) else str(transaction.loan_return_dt)
+
+        content = f"""
+        <html><body>
+            <h3>Hello {transaction.use_name},</h3>
+            <p>We are pleased to confirm that your book rental has been successfully returned. Below are the return details:</p>
+            <ul>
+                <li><strong>Loan Ticket Number:</strong> {transaction.loan_ticket_number}</li>
+                <li><strong>Email:</strong> {transaction.email}</li>
+                <li><strong>Phone:</strong> {transaction.phone}</li>
+                <li><strong>Total Quantity Returned:</strong> {transaction.total_qty}</li>
+                <li><strong>Return Date:</strong> {return_dt}</li>
+            </ul>
+            <h4>Book Details</h4>
+            <table border='1' cellspacing='0' cellpadding='5' style='border-collapse: collapse;'>
+                <tr style='background-color: #f2f2f2;'>
+                    <th>ID</th><th>Title</th><th>Author</th>
+                </tr>
+        """
+
+        for book in transaction.book_details:
+            content += f"""
+                <tr>
+                    <td>{book.book_id}</td>
+                    <td>{book.title}</td>
+                    <td>{book.author}</td>
+                </tr>
+            """
+
+        content += """
+            </table>
+            <br><hr>
+            <p style='font-size: 12px; color: gray;'>This is an automated message. Please do not reply to this email.</p>
+        </body></html>
+        """
+        return content
+
+@staticmethod
+def generate_due_reminder_email_content(
+        transaction: TransactionSendEmailDTO
+    ) -> str:
+        formatted_due_date = transaction.loan_return_dt.strftime("%m/%d/%Y")
+        content = f"""
+        <html><body>
+            <h3>Hello {transaction.use_name},</h3>
+            <p>This is a friendly reminder that your book rental <strong>{transaction.loan_ticket_number}</strong> is due for return by <strong>{formatted_due_date}</strong>.</p>
+            
+            <h4>Book Details</h4>
+            <table border='1' cellspacing='0' cellpadding='5' style='border-collapse: collapse;'>
+                <tr style='background-color: #f2f2f2;'>
+                    <th>ID</th><th>Title</th><th>Author</th>
+                </tr>
+        """
+
+        for book in transaction.book_details:
+            content += f"""
+                <tr>
+                    <td>{book.book_id}</td>
+                    <td>{book.title}</td>
+                    <td>{book.author}</td>
+                </tr>
+            """
+
+        content += f"""
+            </table>
+            <p>Please make sure to return the books on time to avoid any late fees.</p>
+            <br>
+            <hr>
             <p style='font-size: 12px; color: gray;'>This is an automated message. Please do not reply to this email.</p>
         </body></html>
         """

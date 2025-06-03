@@ -10,7 +10,7 @@ from datetime import datetime
 from domain.dto.transaction.transaction_loan_header_request_dto import TransactionLoanHeaderRequestDTO
 from domain.dto.transaction.transaction_loan_detail_request_dto import TransactionLoanDetailRequestDTO
 from lib.common_ui.confirm_modal import ConfirmModal
-from lib.date_utils import format_date_yyyy
+from lib.date_utils import format_date_yyyy, is_valid_return_date
 from lib.notifier_utils import show_success, show_warning
 from views.transactions_loan.choose_user_transaction_dialog import TransactionUserChooseModal
 
@@ -502,6 +502,10 @@ class CreateTransactionLoanPanel(QWidget):
             return
 
         self.transaction_request_dto.loan_return_dt = return_date
+
+        if is_valid_return_date(return_date) == False:
+            show_warning(parent=self.parent ,message="Return date must be at least 1 day after today.")
+            return
 
         if not self.selected_books:
             show_warning(parent=self.parent ,message="Please select at least one book.")
