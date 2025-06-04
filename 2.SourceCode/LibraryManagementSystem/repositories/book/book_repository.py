@@ -85,7 +85,7 @@ class BookRepository(IBookRepository):
     def update_book(self, book: Book) -> Book:
         sql = """
             UPDATE Books
-            SET Title = ?, Author = ?, Cover = ?, LandingPage = ?, Hashtag = ?, GenreCategory = ?, Publisher = ?, PublishYear = ?, Location = ?, IsDisplay = ?, UpdateBy = ?
+            SET Title = ?, Author = ?, Cover = ?, LandingPage = ?, Hashtag = ?, GenreCategory = ?, Publisher = ?, PublishYear = ?, Location = ?, IsDisplay = ?, UpdateBy = ?, QtyOH = ?, UpdateDt = CURRENT_TIMESTAMP
             WHERE BookID = ?
         """
         conn = get_connection()
@@ -94,7 +94,7 @@ class BookRepository(IBookRepository):
             cursor.execute(sql, (
                 book.title, book.author, book.cover, book.landing_page, book.hashtag,
                 book.genre_category, book.publisher, book.publish_year, book.location,
-                book.is_display, book.update_by, book.book_id
+                book.is_display, book.update_by, book.qty_oh, book.book_id
             ))
             conn.commit()
             return book
