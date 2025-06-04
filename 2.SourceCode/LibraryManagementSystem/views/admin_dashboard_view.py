@@ -85,7 +85,7 @@ class Ui_AdminDashboard(QtWidgets.QMainWindow):
 
     def show_book_panel(self):
         self.clear_content()
-        self.current_panel = BookPanel(self.ui.frame_3)
+        self.current_panel = BookPanel(self.ui.frame_3, self.user_dto)
         self.current_panel.setObjectName("content_panel")
         self.current_panel.controller = self.controller 
         self.current_panel.show()
@@ -103,7 +103,7 @@ class Ui_AdminDashboard(QtWidgets.QMainWindow):
 
     def show_category_panel(self):
         self.clear_content()
-        self.current_panel = CategoryPanel(self.ui.frame_3)
+        self.current_panel = CategoryPanel(self.ui.frame_3, self.user_dto)
         self.current_panel.setObjectName("content_panel")
         self.current_panel.controller = self.controller
         self.current_panel.show()

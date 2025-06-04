@@ -3,7 +3,6 @@ from domain.dto.book.book_transaction_loan_dto import BookTransactionLoanDTO
 from domain.entities.genre_category import GenreCategory
 from repositories.book.i_book_repository import IBookRepository
 from repositories.category.i_category_repository import ICategoryRepository
-from domain.dto.category.category_dto import GenreCategoryDTO
 from domain.entities.book import Book
 
 class BookService:
@@ -68,3 +67,18 @@ class BookService:
             result.append(dto)
 
         return result
+
+    def add_book(self, book: Book) -> Book:
+        return self.book_repository.add_book(book)
+
+    def update_book(self, book: Book) -> Book:
+        return self.book_repository.update_book(book)
+    
+    def delete_book(self, book_id: int) -> bool:
+        return self.book_repository.delete_book(book_id)
+    
+    def get_all_books(self) -> List[Book]:
+        return self.book_repository.get_all_books()
+    
+    def get_book_by_id(self, book_id: int) -> Book:
+        return self.book_repository.get_book_by_id(book_id)

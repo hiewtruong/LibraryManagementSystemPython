@@ -55,3 +55,14 @@ class Author:
 
     def set_update_by(self, update_by):
         self.update_by = update_by
+
+    def from_row(row):
+        return Author(
+            author_id=row[0],
+            author_name=row[1],
+            is_deleted=row[2],
+            created_dt=row[3],
+            created_by=row[4],
+            update_dt=row[5],
+            update_by=row[6]
+        )
