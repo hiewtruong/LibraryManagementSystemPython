@@ -21,3 +21,6 @@ class ICategoryRepository(ABC):
     @abstractmethod
     def delete_category(self, genre_category_id: int) -> bool:
         pass
+    @abstractmethod
+    def get_category_by_id(self, genre_category_id: int) -> GenreCategory:
+        pass

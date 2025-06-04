@@ -167,3 +167,26 @@ class CategoryRepository(ICategoryRepository):
         finally:
             close()
         return True
+    
+    def get_category_by_id(self, genre_category_id: int) -> GenreCategory:
+        query = """
+            SELECT GenreCategoryID, NameCategory, GenreCategory, 
+                CreatedDt, CreatedBy, UpdateDt, UpdateBy
+            FROM GenreCategories
+            WHERE GenreCategoryID = ? AND IsDelete = 0
+        """
+        genre_category = None
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(query, (genre_category_id,))
+            row = cursor.fetchone()
+            if row:
+                genre_category = GenreCategory.from_row(row)
+        except Exception as e:
+            print(f"[GenreCategoryService.get_category_by_id] Error: {e}")
+            raise
+        finally:
+            close()
+
+        return genre_category

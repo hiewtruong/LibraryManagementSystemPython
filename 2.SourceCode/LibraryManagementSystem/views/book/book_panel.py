@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import (
     QMessageBox, QCheckBox, QSpinBox, QSizePolicy, QFileDialog, QListWidget, QListWidgetItem, QTextEdit
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QFont
+from PyQt5 import QtWidgets
 from services.book.book_service import BookService
 from services.category.catetory_service import GenreCategoryService
 from services.author.author_service import AuthorService
@@ -12,6 +13,7 @@ from domain.entities.book import Book
 from datetime import datetime
 import os
 import shutil
+from lib.common_ui.confirm_modal import ConfirmModal
 
 class BookDialog(QDialog):
     def __init__(self, parent=None, book=None, user_dto=None):
@@ -23,28 +25,34 @@ class BookDialog(QDialog):
         self.book = book
         self.user_dto = user_dto
         self.init_ui()
-        self.setMinimumSize(640, 680)
+        self.setMinimumSize(640, 780)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setStyleSheet("border: none;font-size: 12px;border-radius: 6px;font-weight: 500;")
 
     def init_ui(self):
         self.all_categories = self.category_service.get_all_genre_categories()
         self.all_authors = self.author_service.get_all_authors()
 
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 10, 10, 10)
+        layout.setSpacing(5)
         form_layout = QFormLayout()
 
         # Form fields
         self.title_input = QLineEdit(self.book.title if self.book else "")
+        self.title_input.setStyleSheet("border: 0.5px solid; padding: 2px;margin-bottom: 10px;")
 
         # Author selection
         self.author_combo = QComboBox()
         self.author_combo.addItems([author.author_name for author in self.all_authors])
+        self.author_combo.setStyleSheet("border: 0.5px solid; padding: 2px;margin-bottom: 10px;")
         if self.book and self.book.author:
             self.author_combo.setCurrentText(self.book.author)
 
         # Genre category multiple selection
         self.genre_list = QListWidget()
         self.genre_list.setSelectionMode(QListWidget.MultiSelection)
+        self.genre_list.setStyleSheet("border: 0.5px solid; padding: 2px;margin-bottom: 10px;")
         for category in self.all_categories:
             item = QListWidgetItem(category.name_category)
             item.setData(Qt.UserRole, category.genre_category_id)
@@ -57,41 +65,50 @@ class BookDialog(QDialog):
         self.genre_list.setMinimumHeight(100)  # Ensure list is visible
 
         self.publisher_input = QLineEdit(self.book.publisher if self.book else "")
+        self.publisher_input.setStyleSheet("border: 0.5px solid; padding: 2px;margin-bottom: 10px;")
         self.year_input = QSpinBox()
+        self.year_input.setStyleSheet("border: 0.5px solid; padding: 2px;margin-bottom: 10px;")
         self.year_input.setRange(1000, 9999)
         publish_year = self.book.publish_year.year if self.book and self.book.publish_year else 2025
         self.year_input.setValue(publish_year)
         self.location_input = QLineEdit(self.book.location if self.book else "")
+        self.location_input.setStyleSheet("border: 0.5px solid; padding: 2px;margin-bottom: 10px;")
         self.display_check = QCheckBox()
         self.display_check.setChecked(self.book.is_display if self.book else False)
+        self.display_check.setStyleSheet("margin-bottom: 10px;")
         self.qty_oh_input = QSpinBox()
         self.qty_oh_input.setRange(0, 1000)
         self.qty_oh_input.setValue(self.book.qty_oh if self.book else 0)
+        self.qty_oh_input.setStyleSheet("border: 0.5px solid; padding: 2px;margin-bottom: 10px;")
         self.cover_path = self.book.cover if self.book else ""
         self.cover_button = QPushButton("Select Cover Image")
         self.cover_button.clicked.connect(self.select_image)
+        self.cover_button.setStyleSheet("border: 0.5px solid #ccc; padding: 5px;margin-bottom: 10px;background-color: #35f36b;")
         self.hashtag_input = QLineEdit(self.book.hashtag if self.book else "")
+        self.hashtag_input.setStyleSheet("border: 0.5px solid; padding: 2px;margin-bottom: 10px;")
         self.landing_page_input = QTextEdit()
         self.landing_page_input.setMinimumHeight(60)  # Ensure textarea is visible
         self.landing_page_input.setText(self.book.landing_page if self.book else "")
-        self.landing_page_input.setStyleSheet("padding: 5px; font-size: 14px;")
+        self.landing_page_input.setStyleSheet("border: 0.5px solid; padding: 2px;margin-bottom: 10px;")
+        self.hashtag_input.setStyleSheet("border: 0.5px solid; padding: 2px;margin-bottom: 10px;")
 
         # Image display
         self.image_label = QLabel()
-        self.image_label.setAlignment(Qt.AlignCenter)
         self.image_label.setFixedSize(150, 200)
+        self.image_label.setStyleSheet("border: 0.5px solid; padding: 2px;margin-bottom: 10px;")
+        self.image_label.setAlignment(Qt.AlignCenter)
         self.update_image()
 
+        form_layout.addRow(self.cover_button, self.image_label)
         form_layout.addRow("Title:", self.title_input)
         form_layout.addRow("Author:", self.author_combo)
-        form_layout.addRow("Genre Categories:", self.genre_list)
         form_layout.addRow("Publisher:", self.publisher_input)
         form_layout.addRow("Publish Year:", self.year_input)
+        form_layout.addRow("Genre Categories:", self.genre_list)
         form_layout.addRow("Location:", self.location_input)
         form_layout.addRow("Display:", self.display_check)
         form_layout.addRow("Quantity On Hand:", self.qty_oh_input)
         form_layout.addRow("Hashtag:", self.hashtag_input)
-        form_layout.addRow(self.cover_button, self.image_label)
         form_layout.addRow("Landing Page:", self.landing_page_input)
 
         layout.addLayout(form_layout)
@@ -108,6 +125,7 @@ class BookDialog(QDialog):
             border-radius: 3px;
         """)
         save_button.clicked.connect(self.save_book)
+        save_button.setMaximumWidth(150)
         button_layout.addWidget(save_button)
 
         cancel_button = QPushButton("Cancel")
@@ -119,8 +137,10 @@ class BookDialog(QDialog):
             border: none;
             border-radius: 3px;
         """)
+        cancel_button.setMaximumWidth(150)
         cancel_button.clicked.connect(self.reject)
         button_layout.addWidget(cancel_button)
+        button_layout.setAlignment(Qt.AlignRight)
 
         layout.addLayout(button_layout)
 
@@ -145,12 +165,14 @@ class BookDialog(QDialog):
                 counter += 1
             # Copy file to destination
             shutil.copy(file_name, dest_path)
+            # remove path "resources/img/" from dest_path
+            dest_path = dest_path.replace(dest_folder + "\\", "")
             self.cover_path = dest_path
             self.update_image()
 
     def update_image(self):
         if self.cover_path:
-            pixmap = QPixmap(self.cover_path)
+            pixmap = QPixmap("resources/img/" + self.cover_path)
             if pixmap.isNull():
                 self.image_label.setText("Invalid image")
             else:
@@ -159,42 +181,44 @@ class BookDialog(QDialog):
             self.image_label.setText("No image")
 
     def save_book(self):
-        try:
-            # Convert selected categories to comma-separated IDs
-            selected_items = self.genre_list.selectedItems()
-            genre_ids = [str(item.data(Qt.UserRole)) for item in selected_items]
-            genre_category = ",".join(genre_ids) if genre_ids else ""
+        modal = ConfirmModal(self, message="Are you sure you want to save this book?", title="Confirm Save")
+        if modal.exec_() == QtWidgets.QDialog.Accepted:
+            try:
+                # Convert selected categories to comma-separated IDs
+                selected_items = self.genre_list.selectedItems()
+                genre_ids = [str(item.data(Qt.UserRole)) for item in selected_items]
+                genre_category = ",".join(genre_ids) if genre_ids else ""
 
-            book_data = Book(
-                book_id=self.book.book_id if self.book else None,
-                title=self.title_input.text().strip(),
-                author=self.author_combo.currentText().strip(),
-                publisher=self.publisher_input.text().strip(),
-                genre_category=genre_category,
-                publish_year=self.year_input.value(),
-                location=self.location_input.text().strip(),
-                is_display=self.display_check.isChecked(),
-                qty_oh=self.qty_oh_input.value(),
-                cover=self.cover_path,
-                hashtag=self.hashtag_input.text().strip(),
-                landing_page=self.landing_page_input.toPlainText().strip(),
-                created_dt=self.book.created_dt if self.book else datetime.now(),
-                created_by=self.book.created_by if self.book else "admin",
-                update_dt=datetime.now(),
-                update_by=self.user_dto.user_name if self.user_dto else "admin"
-            )
+                book_data = Book(
+                    book_id=self.book.book_id if self.book else None,
+                    title=self.title_input.text().strip(),
+                    author=self.author_combo.currentText().strip(),
+                    publisher=self.publisher_input.text().strip(),
+                    genre_category=genre_category,
+                    publish_year=self.year_input.value(),
+                    location=self.location_input.text().strip(),
+                    is_display=self.display_check.isChecked(),
+                    qty_oh=self.qty_oh_input.value(),
+                    cover=self.cover_path,
+                    hashtag=self.hashtag_input.text().strip(),
+                    landing_page=self.landing_page_input.toPlainText().strip(),
+                    created_dt=self.book.created_dt if self.book else datetime.now(),
+                    created_by=self.book.created_by if self.book else "admin",
+                    update_dt=datetime.now(),
+                    update_by=self.user_dto.user_name if self.user_dto else "admin"
+                )
 
-            if not book_data.title or not book_data.author:
-                QMessageBox.warning(self, "Validation Error", "Title and Author are required fields.")
-                return
+                if not book_data.title or not book_data.author:
+                    QMessageBox.warning(self, "Validation Error", "Title and Author are required fields.")
+                    return
 
-            if self.book:
-                self.service.update_book(book_data)
-            else:
-                self.service.add_book(book_data)
-            self.accept()
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to save book: {str(e)}")
+                if self.book:
+                    self.service.update_book(book_data)
+                else:
+                    self.service.add_book(book_data)
+                self.accept()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to save book: {str(e)}")
 
 class BookPanel(QWidget):
     def __init__(self, parent=None, user_dto=None):
@@ -209,6 +233,8 @@ class BookPanel(QWidget):
 
     def init_ui(self):
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 10, 10, 10)
+        layout.setSpacing(5)
 
         # Title
         title_label = QLabel("Manage Books")
@@ -219,27 +245,39 @@ class BookPanel(QWidget):
             border: none;
             background-color: none;
         """)
-        title_label.setAlignment(Qt.AlignCenter)
+        title_label.setAlignment(Qt.AlignLeft)
         layout.addWidget(title_label)
 
         # Search bar and Add New button
         search_layout = QHBoxLayout()
+
+        # Search label
+        search_label = QLabel("Search")
+        search_label_font = QFont()
+        search_label_font.setPixelSize(13)
+        search_label.setFont(search_label_font)
+        search_label.setStyleSheet("border: none;")
+        search_label.setMaximumWidth(50)
+        search_layout.addWidget(search_label)
         
         # Search components
         self.search_field = QComboBox()
+        self.search_field.setMaximumWidth(180)
+        self.search_field.setMinimumHeight(25)
+        self.search_field.setMinimumWidth(150)
         self.search_field.addItems(["Title", "Author", "Publisher", "Genre Category"])
-        self.search_field.setStyleSheet("padding: 5px; font-size: 14px;")
+        self.search_field.setStyleSheet("padding: 5px; font-size: 13px;border: 0.5px solid;")
         search_layout.addWidget(self.search_field)
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Enter search term...")
-        self.search_input.setStyleSheet("padding: 5px; font-size: 14px;")
+        self.search_input.setFixedSize(250, 25) 
         search_layout.addWidget(self.search_input)
 
         search_button = QPushButton("Search")
         search_button.setStyleSheet("""
             padding: 5px 15px;
-            font-size: 14px;
+            font-size: 13px;
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -267,24 +305,33 @@ class BookPanel(QWidget):
         # Book table
         self.table = QTableWidget()
         self.table.setColumnCount(10)
+        self.table.setFont(QFont("Arial", 13))
+        self.table.setRowHeight(0, 20)
+        self.table.setShowGrid(True)
         self.table.setHorizontalHeaderLabels([
             "ID", "Title", "Author", "Publisher", "Genre", 
             "Publish Year", "Location", "Stock", "Status", "Actions"
         ])
         self.table.setStyleSheet("""
-            QTableWidget {
-                border: 1px solid #ddd;
-                font-size: 14px;
-            }
-            QHeaderView::section {
-                background-color: #f5f5f5;
-                padding: 5px;
-                border: 1px solid #ddd;
-            }
+            border: 0.5px solid;
+            font-size: 12px;
         """)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.setColumnWidth(1, 190)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        self.table.verticalHeader().setVisible(False)
         self.table.setSelectionMode(QTableWidget.SingleSelection)
         self.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.doubleClicked.connect(self.handle_double_click)
+
+        header_font = QFont()
+        header_font.setPixelSize(13)
+        header_font.setBold(True)
+        for i in range(self.table.columnCount()):
+            header_item = self.table.horizontalHeaderItem(i)
+            if header_item:
+                header_item.setFont(header_font)
         layout.addWidget(self.table)
 
         self.load_books()
@@ -307,23 +354,11 @@ class BookPanel(QWidget):
             display_status = "Displayed" if book.is_display else "Not Displayed"
             self.table.setItem(row, 8, QTableWidgetItem(display_status))
 
-            # Action buttons
+            # Action buttons (only Delete button)
             action_widget = QWidget()
             action_layout = QHBoxLayout(action_widget)
             action_layout.setContentsMargins(0, 0, 0, 0)
             action_layout.setSpacing(5)
-
-            edit_button = QPushButton("Edit")
-            edit_button.setStyleSheet("""
-                padding: 3px 10px;
-                font-size: 12px;
-                background-color: #FFC107;
-                color: white;
-                border: none;
-                border-radius: 3px;
-            """)
-            edit_button.clicked.connect(lambda _, b=book: self.edit_book(b))
-            action_layout.addWidget(edit_button)
 
             delete_button = QPushButton("Delete")
             delete_button.setStyleSheet("""
@@ -334,10 +369,17 @@ class BookPanel(QWidget):
                 border: none;
                 border-radius: 3px;
             """)
+            delete_button.setMaximumWidth(80)
             delete_button.clicked.connect(lambda _, b=book.book_id: self.delete_book(b))
             action_layout.addWidget(delete_button)
 
             self.table.setCellWidget(row, 9, action_widget)
+
+    def handle_double_click(self, index):
+        row = index.row()
+        book_id = int(self.table.item(row, 0).text())
+        book = self.service.get_book_by_id(book_id)
+        self.edit_book(book)
 
     def search_books(self):
         search_field = self.search_field.currentText().lower().replace(" ", "_")
@@ -358,21 +400,13 @@ class BookPanel(QWidget):
         if dialog.exec_():
             self.load_books()
 
-    def edit_book(self, book_dto):
-        # Convert DTO to Book entity
-        book = self.service.get_book_by_id(book_dto.book_id)
+    def edit_book(self, book):
         dialog = BookDialog(self, book, self.user_dto)
         if dialog.exec_():
             self.load_books()
 
     def delete_book(self, book_id):
-        reply = QMessageBox.question(
-            self,
-            "Confirm Delete",
-            "Are you sure you want to delete this book?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
-        if reply == QMessageBox.Yes:
+        modal = ConfirmModal(self, message="Are you sure you want to delete this book?", title="Confirm Delete")
+        if modal.exec_() == QtWidgets.QDialog.Accepted:
             if self.service.delete_book(book_id):
                 self.load_books()

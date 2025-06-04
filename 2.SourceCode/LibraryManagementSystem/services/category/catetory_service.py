@@ -54,3 +54,6 @@ class GenreCategoryService(IGenreCategoryService):
     
     def delete_category(self, genre_category_id: int) -> bool:
         return self.genre_category_repository.delete_category(genre_category_id)
+    
+    def get_category_by_id(self, genre_category_id: int) -> GenreCategory:
+        return self.genre_category_repository.get_category_by_id(genre_category_id)
