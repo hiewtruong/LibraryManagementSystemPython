@@ -73,14 +73,14 @@ class CreateTransactionLoanPanel(QWidget):
 
         self.lbl_user_prompt = QLabel("Please Choose User")
         lbl_user_prompt_font = QFont()
-        lbl_user_prompt_font.setPixelSize(13)
+        lbl_user_prompt_font.setPixelSize(12)
         self.lbl_user_prompt.setFont(lbl_user_prompt_font)
         self.lbl_user_prompt.setStyleSheet("border: none;")
         user_layout.addWidget(self.lbl_user_prompt)
 
         self.lbl_selected_user = QLabel("")
         lbl_selected_user_font = QFont()
-        lbl_selected_user_font.setPixelSize(13)
+        lbl_selected_user_font.setPixelSize(12)
         self.lbl_selected_user.setFont(lbl_selected_user_font)
         self.lbl_selected_user.setStyleSheet("border: none;") 
         user_layout.addWidget(self.lbl_selected_user)
@@ -126,7 +126,7 @@ class CreateTransactionLoanPanel(QWidget):
 
         self.loan_return_dt_field = QDateEdit()
         loan_return_dt_field_font = QFont()
-        loan_return_dt_field_font.setPixelSize(13)
+        loan_return_dt_field_font.setPixelSize(12)
         self.loan_return_dt_field.setFont(loan_return_dt_field_font)
         self.loan_return_dt_field.setFixedSize(150, 25)
         self.loan_return_dt_field.setCalendarPopup(True)
@@ -151,7 +151,7 @@ class CreateTransactionLoanPanel(QWidget):
 
         self.lbl_total_quantity = QLabel("0")
         lbl_total_quantity_font = QFont()
-        lbl_total_quantity_font.setPixelSize(13)
+        lbl_total_quantity_font.setPixelSize(12)
         self.lbl_total_quantity.setFont(lbl_total_quantity_font)
         self.lbl_total_quantity.setStyleSheet("border: none;")
         total_qty_layout.addWidget(self.lbl_total_quantity)
@@ -227,9 +227,9 @@ class CreateTransactionLoanPanel(QWidget):
         self.available_books_table.verticalHeader().setVisible(False)
         self.available_books_table.setColumnCount(6)
         self.available_books_table.setHorizontalHeaderLabels(["Book ID", "Title", "Author", "Genre", "Publisher", "Publish Year"])
-        self.available_books_table.setFont(QFont("Arial", 13))
+        self.available_books_table.setFont(QFont("Arial", 12))
         header_font = QFont()
-        header_font.setPixelSize(15)
+        header_font.setPixelSize(13)
         header_font.setBold(True)
         for i in range(self.available_books_table.columnCount()):
             header_item = self.available_books_table.horizontalHeaderItem(i)
@@ -389,7 +389,7 @@ class CreateTransactionLoanPanel(QWidget):
         keyword = self.search_field.text().strip().lower()
         self.available_books_table.setRowCount(0)
         data_font = QFont()
-        data_font.setPixelSize(13)
+        data_font.setPixelSize(12)
 
         for book in self.all_books:
             if book not in self.selected_books:
@@ -417,7 +417,7 @@ class CreateTransactionLoanPanel(QWidget):
         keyword = self.search_field_selected.text().strip().lower()
         self.selected_books_table.setRowCount(0)
         data_font = QFont()
-        data_font.setPixelSize(13)
+        data_font.setPixelSize(12)
 
         for book in self.selected_books:
             if not keyword or keyword in book.title.lower():
@@ -439,7 +439,7 @@ class CreateTransactionLoanPanel(QWidget):
         self.search_field.setText("")
         self.available_books_table.setRowCount(0)
         data_font = QFont()
-        data_font.setPixelSize(13)
+        data_font.setPixelSize(12)
 
         for book in self.all_books:
             if book not in self.selected_books:
@@ -466,7 +466,7 @@ class CreateTransactionLoanPanel(QWidget):
         self.search_field_selected.setText("")
         self.selected_books_table.setRowCount(0)
         data_font = QFont()
-        data_font.setPixelSize(13)
+        data_font.setPixelSize(12)
 
         for book in self.selected_books:
             row = self.selected_books_table.rowCount()

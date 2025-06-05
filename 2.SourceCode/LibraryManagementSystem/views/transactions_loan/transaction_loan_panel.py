@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QColor
-from datetime import datetime
 from lib.constants import TRANS_PAID
 from services.transaction_loan.transaction_loan_service import TransactionLoanService
 from domain.dto.transaction.transaction_loan_header_request_dto import TransactionLoanHeaderRequestDTO
@@ -94,7 +93,7 @@ class TransactionLoanPanel(QWidget):
         self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         header_font = QFont()
-        header_font.setPixelSize(15)
+        header_font.setPixelSize(13)
         header_font.setBold(True)
         for i in range(self.table.columnCount()):
             header_item = self.table.horizontalHeaderItem(i)
@@ -115,7 +114,7 @@ class TransactionLoanPanel(QWidget):
         self.table.setRowCount(0)
         self.table.setRowCount(len(self.headers))
         data_font = QFont()
-        data_font.setPixelSize(13)
+        data_font.setPixelSize(12)
 
         for row_idx, header in enumerate(self.headers):
             return_loan_date = header.get_loan_return_dt().date() if header.get_loan_return_dt() else None
@@ -160,7 +159,7 @@ class TransactionLoanPanel(QWidget):
         self.table.setRowCount(0)
         self.table.setRowCount(len(self.headers))
         data_font = QFont()
-        data_font.setPixelSize(13)
+        data_font.setPixelSize(12)
 
         for row_idx, header in enumerate(self.headers):
             return_loan_date = header.get_loan_return_dt().date() if header.get_loan_return_dt() else None

@@ -155,6 +155,7 @@ class TransactionLoanDetailDialog(QDialog):
         controller = TransactionLoanController()
         if modal.exec_() == QtWidgets.QDialog.Accepted:
             controller.send_email_remind_transaction_loan(self.header_data.loan_header_id)
+            show_success(parent=self.parent,message="Remind this trans successfully")
             self.reloadDataSignal.emit()
             self.close()
     
