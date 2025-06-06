@@ -54,3 +54,65 @@ class UserService(IUserService):
         users = self.user_repository.get_all_users_customer()
         return users
 
+    def is_email_duplicate(self, email: str) -> bool:
+        if not self.user_repository:
+            self.user_repository = UserRepository()
+        return self.user_repository.is_email_duplicate(email)
+
+    def create_user(self, user_dto: UserDTO) -> bool:
+        if self.is_email_duplicate(user_dto.email):
+            raise Exception("Email already exists.")
+        # Encrypt password before saving
+        if user_dto.password:
+            user_dto.password = encrypt_password(user_dto.password)
+        return self.user_repository.create_user(user_dto)
+
+    def update_user(self, user_dto: UserDTO) -> bool:
+        try:
+            # Encrypt password if changed before updating
+            if user_dto.password:
+                user_dto.password = encrypt_password(user_dto.password)
+            return self.user_repository.update_user(user_dto)
+        except Exception as e:
+            raise Exception(f"[UserService.update_user] Exception: {str(e)}")
+
+    def delete_user(self, user_id: int) -> bool:
+        try:
+            return self.user_repository.delete_user(user_id)
+        except Exception as e:
+            print(f"[UserService.delete_user] Exception: {str(e)}")
+            return False
+
+    def get_all_user_roles(self) -> List[UserRoleDTO]:
+        if not self.user_repository:
+            self.user_repository = UserRepository()
+        return self.user_repository.get_all_user_roles()
+
+    def get_all_users(self) -> List[UserDTO]:
+        if not self.user_repository:
+            self.user_repository = UserRepository()
+        user_role_dtos = self.user_repository.get_all_users_customer()
+        user_dtos = []
+        for ur in user_role_dtos:
+            user_dto = UserDTO(
+                user_id=ur.user_id,
+                first_name=ur.first_name,
+                last_name=ur.last_name,
+                user_name=ur.user_name,
+                password=ur.password,
+                email=ur.email,
+                phone=ur.phone,
+                address=ur.address,
+                gender=ur.gender,
+                user_role_id=ur.user_role_id_fk,
+                is_delete=ur.is_delete,
+                is_admin=ur.is_admin,
+                role_name=ur.role_name,
+                created_dt=None,
+                created_by=None,
+                update_dt=None,
+                update_by=None
+            )
+            user_dtos.append(user_dto)
+        return user_dtos
+
