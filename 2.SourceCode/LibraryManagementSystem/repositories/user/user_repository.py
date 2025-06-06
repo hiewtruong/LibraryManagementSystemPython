@@ -2,6 +2,7 @@ from typing import List
 from db_utils import get_connection, close
 from domain.dto.user.user_login_dto import UserLoginDTO
 from domain.dto.user.user_role_dto import UserRoleDTO
+from domain.dto.user.user_dto import UserDTO
 from repositories.user.i_user_repository import IUserRepository
 
 class UserRepository(IUserRepository):
@@ -28,7 +29,35 @@ class UserRepository(IUserRepository):
                 )
             return None
         except Exception as e:
-            print(f"[UserRepository] Lỗi khi truy vấn: {e}")
+            print(f"[UserRepository] Error querying user by username: {e}")
+            raise
+        finally:
+            close()
+
+    def get_all_user_roles(self) -> list:
+        query = '''
+            SELECT UserRoleID, RoleName, IsAdmin, IsDelete
+            FROM UserRoles
+            WHERE IsDelete = 0
+        '''
+        conn = None
+        roles = []
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            for row in rows:
+                role = UserRoleDTO(
+                    user_role_id_fk=row[0],
+                    role_name=row[1],
+                    is_admin=row[2],
+                    is_delete=row[3]
+                )
+                roles.append(role)
+            return roles
+        except Exception as e:
+            print(f"[UserRepository] Error retrieving user roles: {e}")
             raise
         finally:
             close()
@@ -52,7 +81,6 @@ class UserRepository(IUserRepository):
                 r.IsAdmin
             FROM Users u
             JOIN UserRoles r ON u.UserRoleID_FK = r.UserRoleID
-            WHERE u.IsDelete = 0 AND r.IsAdmin = 0
             ORDER BY u.UserID DESC
         """
         conn = None
@@ -110,3 +138,107 @@ class UserRepository(IUserRepository):
         finally:
             close()
         return user_list
+
+    def is_email_duplicate(self, email: str) -> bool:
+        query = '''
+            SELECT 1 FROM Users WHERE Email = ? AND IsDelete = 0
+        '''
+        conn = None
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(query, (email,))
+            result = cursor.fetchone()
+            return result is not None
+        except Exception as e:
+            print(f"[UserRepository] Error checking duplicate email: {e}")
+            raise
+        finally:
+            close()
+
+    def create_user(self, user_dto: UserDTO) -> bool:
+        query = '''
+            INSERT INTO Users (UserName, Email, FirstName, LastName, Gender, Phone, Address, UserRoleID_FK, IsDelete, CreatedDT, CreatedBy, UpdateDT, UpdateBy)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        '''
+        conn = None
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(query, (
+                user_dto.user_name,
+                user_dto.email,
+                user_dto.first_name,
+                user_dto.last_name,
+                user_dto.gender,
+                user_dto.phone,
+                user_dto.address,
+                user_dto.user_role_id,
+                user_dto.is_delete,
+                user_dto.created_dt,
+                user_dto.created_by,
+                user_dto.update_dt,
+                user_dto.update_by
+            ))
+            conn.commit()
+            return True
+        except Exception as e:
+            print(f"[UserRepository] Error creating user: {e}")
+            raise
+        finally:
+            close()
+
+    def update_user(self, user_dto: UserDTO) -> bool:
+        query = '''
+            UPDATE Users
+            SET FirstName = ?, LastName = ?, UserName = ?, Password = ?, Gender = ?, Email = ?, Phone = ?, Address = ?, UserRoleID_FK = ?, IsDelete = ?, UpdateDT = ?, UpdateBy = ?
+            WHERE UserID = ?
+        '''
+        conn = None
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(query, (
+                user_dto.first_name,
+                user_dto.last_name,
+                user_dto.user_name,
+                user_dto.password,
+                user_dto.gender,
+                user_dto.email,
+                user_dto.phone,
+                user_dto.address,
+                user_dto.user_role_id,
+                user_dto.is_delete,
+                user_dto.update_dt,
+                user_dto.update_by,
+                user_dto.user_id
+            ))
+            conn.commit()
+            return True
+        except Exception as e:
+            print(f"[UserRepository] Error updating user: {e}")
+            raise
+        finally:
+            close()
+
+    def delete_user(self, user_id: int) -> bool:
+        query = '''
+            DELETE FROM Users
+            WHERE UserID = ?
+        '''
+        conn = None
+        try:
+            conn = get_connection()
+            if conn is None:
+                print("[UserRepository] Database connection failed in delete_user.")
+                return False
+            cursor = conn.cursor()
+            cursor.execute(query, (user_id,))
+            conn.commit()
+            print(f"[UserRepository] User with ID {user_id} deleted from database.")
+            return True
+        except Exception as e:
+            print(f"[UserRepository] Error deleting user: {e}")
+            return False
+        finally:
+            close()
