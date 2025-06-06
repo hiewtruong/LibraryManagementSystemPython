@@ -1,5 +1,5 @@
 class UserDTO:
-    def __init__(self, user_id=None, first_name=None, last_name=None, user_name=None, password=None, email=None, phone=None, address=None, is_delete=False, is_admin=False, role_name=None):
+    def __init__(self, user_id=None, first_name=None, last_name=None, user_name=None, password=None, email=None, phone=None, address=None, gender=None, user_role_id=None, is_delete=False, is_admin=False, role_name=None, created_dt=None, created_by=None, update_dt=None, update_by=None):
         self.user_id = user_id
         self.first_name = first_name
         self.last_name = last_name
@@ -8,9 +8,15 @@ class UserDTO:
         self.email = email
         self.phone = phone
         self.address = address
+        self.gender = gender
+        self.user_role_id = user_role_id
         self.is_delete = is_delete
         self.is_admin = is_admin
         self.role_name = role_name
+        self.created_dt = created_dt
+        self.created_by = created_by
+        self.update_dt = update_dt
+        self.update_by = update_by
 
     def get_user_id(self):
         return self.user_id
@@ -77,3 +83,39 @@ class UserDTO:
 
     def set_role_name(self, role_name):
         self.role_name = role_name
+
+    def get_gender(self):
+        return self.gender
+
+    def set_gender(self, gender):
+        self.gender = gender
+
+    def get_user_role_id(self):
+        return self.user_role_id
+
+    def set_user_role_id(self, user_role_id):
+        self.user_role_id = user_role_id
+
+    def get_created_dt(self):
+        return self.created_dt
+
+    def set_created_dt(self, created_dt):
+        self.created_dt = created_dt
+
+    def get_created_by(self):
+        return self.created_by
+
+    def set_created_by(self, created_by):
+        self.created_by = created_by
+
+    def get_update_dt(self):
+        return self.update_dt
+
+    def set_update_dt(self, update_dt):
+        self.update_dt = update_dt
+
+    def get_update_by(self):
+        return self.update_by
+
+    def set_update_by(self, update_by):
+        self.update_by = update_by
