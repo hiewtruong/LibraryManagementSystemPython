@@ -18,7 +18,13 @@ class AuthorService(IAuthorService):
                 author_service=AuthorRepository()
             )
         return cls._instance
-
+    def get_author_by_id(self, author_id):
+        # Implement logic to retrieve an author by ID
+        authors = self.get_all_authors()
+        for author in authors:
+            if author.author_id == author_id:
+                return author
+        return None
     def get_all_authors(self) -> List[Author]:
         authors = self.author_service.get_all_authors()
         self._map_usernames_to_emails(authors)
