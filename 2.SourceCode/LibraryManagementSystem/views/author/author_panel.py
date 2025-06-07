@@ -186,8 +186,13 @@ class AuthorPanel(QWidget):
             if dialog.exec_():
                 authors = self.controller.get_all_authors()
                 self.load_author_data(authors)
+                # Notify controller about success
+                if hasattr(self.controller, 'notify_author_added'):
+                    self.controller.notify_author_added()
         else:
-            QMessageBox.warning(self, "Warning", "Controller not set.")
+            # Notify controller about missing controller
+            if hasattr(self.controller, 'notify_controller_missing'):
+                self.controller.notify_controller_missing()
 
     def edit_author(self, author):
         if self.controller:
@@ -196,18 +201,18 @@ class AuthorPanel(QWidget):
             if dialog.exec_():
                 authors = self.controller.get_all_authors()
                 self.load_author_data(authors)
+                # Notify controller about success
+                if hasattr(self.controller, 'notify_author_updated'):
+                    self.controller.notify_author_updated()
         else:
-            QMessageBox.warning(self, "Warning", "Controller not set.")
+            if hasattr(self.controller, 'notify_controller_missing'):
+                self.controller.notify_controller_missing()
 
     def delete_author(self, author_id):
-        reply = QMessageBox.question(
-            self,
-            "Confirm Delete",
-            "Are you sure you want to delete this author?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
-        if reply == QMessageBox.Yes:
-            if self.controller and self.controller.delete_author(author_id):
-                authors = self.controller.get_all_authors()
-                self.load_author_data(authors)
+        # Notify controller to confirm deletion
+        if self.controller and hasattr(self.controller, 'confirm_author_deletion'):
+            confirmed = self.controller.confirm_author_deletion(author_id)
+            if confirmed:
+                if self.controller.delete_author(author_id):
+                    authors = self.controller.get_all_authors()
+                    self.load_author_data(authors)
