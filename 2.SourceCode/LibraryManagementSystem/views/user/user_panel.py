@@ -203,9 +203,11 @@ class UserPanel(QWidget):
             if dialog.exec_():
                 users = self.controller.get_all_users()
                 self.load_user_data(users)
-                show_success(self, "User created successfully.")
+                if hasattr(self.controller, 'notify_user_added'):
+                    self.controller.notify_user_added()
         else:
-            show_warning(self, "Controller not set.")
+            if hasattr(self.controller, 'notify_controller_missing'):
+                self.controller.notify_controller_missing()
 
     def edit_user(self, user):
         if self.controller:
@@ -214,20 +216,25 @@ class UserPanel(QWidget):
             if dialog.exec_():
                 users = self.controller.get_all_users()
                 self.load_user_data(users)
-                show_success(self, "User updated successfully.")
+                if hasattr(self.controller, 'notify_user_updated'):
+                    self.controller.notify_user_updated()
         else:
-            show_warning(self, "Controller not set.")
+            if hasattr(self.controller, 'notify_controller_missing'):
+                self.controller.notify_controller_missing()
 
     def delete_user(self, user_id):
-        confirm = ConfirmModal(self, "Confirm Delete", "Do you want to delete?")
-        if confirm.exec_():
-            if self.controller:
+        if self.controller and hasattr(self.controller, 'confirm_user_deletion'):
+            confirmed = self.controller.confirm_user_deletion(user_id)
+            if confirmed:
                 success = self.controller.delete_user(user_id)
                 if success:
                     users = self.controller.get_all_users()
                     self.load_user_data(users)
-                    show_success(self, "User deleted successfully.")
+                    if hasattr(self.controller, 'notify_user_deleted'):
+                        self.controller.notify_user_deleted()
                 else:
-                    show_warning(self, "Failed to delete user.")
+                    if hasattr(self.controller, 'notify_user_delete_failed'):
+                        self.controller.notify_user_delete_failed()
             else:
-                show_warning(self, "Controller not set.")
+                if hasattr(self.controller, 'notify_controller_missing'):
+                    self.controller.notify_controller_missing()
