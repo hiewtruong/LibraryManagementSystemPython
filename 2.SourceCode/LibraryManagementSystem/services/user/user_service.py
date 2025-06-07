@@ -14,12 +14,22 @@ class UserService(IUserService):
 
     def __init__(self, user_repository: IUserRepository):
         self.user_repository = user_repository
+        # Set default logged-in user email as requested
+        self.logged_in_user_email = "admin@uit.com"
 
     @classmethod
     def get_instance(cls, user_repository: IUserRepository = None):
         if cls._instance is None:
             cls._instance = cls(user_repository=user_repository)
         return cls._instance
+
+    def get_user_by_id(self, user_id):
+        # Retrieve a user by their ID
+        users = self.get_all_users()
+        for user in users:
+            if user.user_id == user_id:
+                return user
+        return None
 
     def get_user_by_username(self, username: str, password_input: str, parent=None) -> UserLoginDTO or None:
         try:
@@ -62,6 +72,8 @@ class UserService(IUserService):
     def create_user(self, user_dto: UserDTO) -> bool:
         if self.is_email_duplicate(user_dto.email):
             raise Exception("Email already exists.")
+        user_dto.update_by = self.logged_in_user_email
+        user_dto.created_by = self.logged_in_user_email
         # Encrypt password before saving
         if user_dto.password:
             user_dto.password = encrypt_password(user_dto.password)
@@ -69,7 +81,10 @@ class UserService(IUserService):
 
     def update_user(self, user_dto: UserDTO) -> bool:
         try:
+            # Debug log for update_by value
+            print(f"[UserService.update_user] update_by: {self.logged_in_user_email}")
             # Encrypt password if changed before updating
+            user_dto.update_by = self.logged_in_user_email
             if user_dto.password:
                 user_dto.password = encrypt_password(user_dto.password)
             return self.user_repository.update_user(user_dto)
@@ -115,4 +130,3 @@ class UserService(IUserService):
             )
             user_dtos.append(user_dto)
         return user_dtos
-
