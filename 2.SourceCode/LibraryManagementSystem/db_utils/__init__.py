@@ -1,4 +1,6 @@
+
 from .database_core import (
+    DbUtils,
     get_connection,
     begin_transaction,
     commit,
@@ -12,6 +14,7 @@ from .database_core import (
 )
 
 __all__ = [
+    'DbUtils',
     'get_connection',
     'begin_transaction',
     'commit',
