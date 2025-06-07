@@ -1,240 +1,208 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QHeaderView, QMessageBox, QComboBox
+    QWidget, QLabel, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
+    QPushButton, QLineEdit, QComboBox, QHeaderView, QSizePolicy, QMessageBox, QDialog
 )
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
 from lib.common_ui.confirm_modal import ConfirmModal
-from lib.notifier_utils import show_success, show_warning
-
+from services.user.user_service import UserService
+from views.user.create_user_modal import CreateUserModal
 class UserPanel(QWidget):
-    def __init__(self, controller=None, parent=None):
+    def __init__(self, parent=None, user_dto=None):
         super().__init__(parent)
-        self.controller = controller
-        self.initUI()
+        self.setStyleSheet("background-color: white;")
+        self.parent = parent
+        self.user_dto = user_dto
+        self.service = UserService.get_instance()
+        self.init_ui()
         self.setMinimumSize(1370, 830)
-        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-    def initUI(self):
-        self.setWindowTitle("Manage Users")
+    def init_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 10, 10, 10)
+        layout.setSpacing(5)
 
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(20, 10, 10, 10)
-        main_layout.setSpacing(10)
-
-        # Title label
+        # Title
         title_label = QLabel("Manage Users")
         title_label.setStyleSheet("""
             font-size: 20px;
             font-weight: bold;
+            padding: 10px;
             border: none;
-            padding-top: 10px;
             background-color: none;
         """)
         title_label.setAlignment(Qt.AlignLeft)
-        main_layout.addWidget(title_label)
+        layout.addWidget(title_label)
 
         # Search bar and Add New button
         search_layout = QHBoxLayout()
-        search_layout.setAlignment(Qt.AlignLeft)
 
         # Search label
         search_label = QLabel("Search")
-        search_label_font = title_label.font()
+        search_label_font = QFont()
         search_label_font.setPixelSize(13)
         search_label.setFont(search_label_font)
         search_label.setStyleSheet("border: none;")
         search_label.setMaximumWidth(50)
         search_layout.addWidget(search_label)
 
-        # Search field combo box
+        # Search components
         self.search_field = QComboBox()
-        self.search_field.addItems(["User Name", "Email", "First Name", "Last Name"])
         self.search_field.setMaximumWidth(180)
         self.search_field.setMinimumHeight(25)
-        combo_font = self.search_field.font()
-        combo_font.setPixelSize(13)
-        self.search_field.setFont(combo_font)
+        self.search_field.setMinimumWidth(150)
+        self.search_field.addItems(["User Name", "Email", "First Name", "Last Name"])
+        self.search_field.setStyleSheet("padding: 5px; font-size: 13px;border: 0.5px solid;")
         search_layout.addWidget(self.search_field)
 
-        # Search input
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Enter search term...")
-        self.search_input.setMaximumWidth(250)
-        self.search_input.setMinimumHeight(25)
-        self.search_input.setFont(combo_font)
+        self.search_input.setFixedSize(250, 25)
         search_layout.addWidget(self.search_input)
 
-        # Search button
         search_button = QPushButton("Search")
-        search_button.setFixedWidth(70)
-        search_button.setFixedHeight(25)
         search_button.setStyleSheet("""
+            padding: 5px 15px;
+            font-size: 13px;
             background-color: #4CAF50;
             color: white;
-            border-radius: 5px;
+            border: none;
+            border-radius: 3px;
         """)
         search_button.clicked.connect(self.search_users)
         search_layout.addWidget(search_button)
 
-        # Add New button (optional reposition or remove)
-        # Here, I will keep it but move it to the right side with stretch
-        search_layout.addStretch()
+        # Add New button
         add_button = QPushButton("Add New")
-        add_button.setFixedHeight(25)
         add_button.setStyleSheet("""
+            padding: 5px 15px;
+            font-size: 14px;
             background-color: #2196F3;
             color: white;
-            border-radius: 5px;
+            border: none;
+            border-radius: 3px;
         """)
-        add_button.clicked.connect(self.create_new_user)
+        add_button.clicked.connect(self.add_user)
+        search_layout.addStretch()
         search_layout.addWidget(add_button)
 
-        main_layout.addLayout(search_layout)
+        layout.addLayout(search_layout)
 
         # User table
-        self.user_table = QTableWidget()
-        self.user_table.setColumnCount(11)
-        self.user_table.setHorizontalHeaderLabels([
-            "UserID", "UserName", "Email", "FirstName", "LastName", "Phone", "Address", "Password", "Gender", "Edit", "Delete"
+        self.table = QTableWidget()
+        self.table.setColumnCount(10)
+        self.table.setFont(QFont("Arial", 13))
+        self.table.setRowHeight(0, 20)
+        self.table.setShowGrid(True)
+        self.table.setHorizontalHeaderLabels([
+            "UserID", "UserName", "Email", "FirstName", "LastName", "Phone", "Address", "Password", "Gender", "Actions"
         ])
-        self.user_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.user_table.horizontalHeader().setStretchLastSection(True)
-        self.user_table.verticalHeader().setVisible(False)
-        self.user_table.setAlternatingRowColors(True)
-        self.user_table.setStyleSheet("""
-            alternate-background-color: #f9f9f9;
-            background-color: white;
+        self.table.setStyleSheet("""
             border: 0.5px solid;
+            font-size: 12px;
         """)
-        self.user_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.user_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.user_table.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setSelectionMode(QTableWidget.SingleSelection)
+        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.doubleClicked.connect(self.handle_double_click)
 
-        # Set font sizes for header and data
-        font_header = self.user_table.horizontalHeader().font()
-        font_header.setPixelSize(15)
-        font_header.setBold(True)
-        self.user_table.horizontalHeader().setFont(font_header)
+        header_font = QFont()
+        header_font.setPixelSize(13)
+        header_font.setBold(True)
+        for i in range(self.table.columnCount()):
+            header_item = self.table.horizontalHeaderItem(i)
+            if header_item:
+                header_item.setFont(header_font)
+        layout.addWidget(self.table)
 
-        font_data = self.user_table.font()
-        font_data.setPixelSize(13)
-        font_data.setBold(False)
-        self.user_table.setFont(font_data)
+        self.load_users()
 
-        main_layout.addWidget(self.user_table)
+    def load_users(self, users=None):
+        if users is None:
+            users = self.service.get_all_users()
 
-        # Bottom panel with total label (optional adjust or remove)
-        bottom_panel = QHBoxLayout()
-        bottom_panel.addStretch()
-        self.total_label = QLabel("Total: 0")
-        bottom_panel.addWidget(self.total_label)
-        main_layout.addLayout(bottom_panel)
-
-        # Load all users on init
-        if self.controller:
-            users = self.controller.get_all_users()
-            self.load_user_data(users)
-
-    def load_user_data(self, users):
         filtered_users = [user for user in users if not getattr(user, 'is_delete', False)]
-        self.user_table.setRowCount(len(filtered_users))
+        self.table.setRowCount(len(filtered_users))
         for row, user in enumerate(filtered_users):
-            self.user_table.setItem(row, 0, QTableWidgetItem(str(getattr(user, 'user_id', ''))))
-            self.user_table.setItem(row, 1, QTableWidgetItem(getattr(user, 'user_name', '')))
-            self.user_table.setItem(row, 2, QTableWidgetItem(getattr(user, 'email', '')))
-            self.user_table.setItem(row, 3, QTableWidgetItem(getattr(user, 'first_name', '')))
-            self.user_table.setItem(row, 4, QTableWidgetItem(getattr(user, 'last_name', '')))
-            self.user_table.setItem(row, 5, QTableWidgetItem(getattr(user, 'phone', '')))
-            self.user_table.setItem(row, 6, QTableWidgetItem(getattr(user, 'address', '')))
-            self.user_table.setItem(row, 7, QTableWidgetItem(getattr(user, 'password', '')))
-            self.user_table.setItem(row, 8, QTableWidgetItem(str(getattr(user, 'gender', ''))))
+            self.table.setItem(row, 0, QTableWidgetItem(str(user.user_id)))
+            self.table.setItem(row, 1, QTableWidgetItem(user.user_name))
+            self.table.setItem(row, 2, QTableWidgetItem(user.email))
+            self.table.setItem(row, 3, QTableWidgetItem(user.first_name))
+            self.table.setItem(row, 4, QTableWidgetItem(user.last_name))
+            self.table.setItem(row, 5, QTableWidgetItem(user.phone))
+            self.table.setItem(row, 6, QTableWidgetItem(user.address))
+            self.table.setItem(row, 7, QTableWidgetItem(user.password))
+            self.table.setItem(row, 8, QTableWidgetItem(str(user.gender)))
 
-            # Action buttons
-            action_widget_edit = QPushButton("Edit")
-            action_widget_edit.setStyleSheet("""
-                height: 25px;
-                font-size: 12px;
-                background-color: #FFC107;
-                color: white;
-                border: none;
-                border-radius: 3px;
-            """)
-            action_widget_edit.clicked.connect(lambda _, u=user: self.edit_user(u))
+            # Action buttons (only Delete button)
+            action_widget = QWidget()
+            action_layout = QHBoxLayout(action_widget)
+            action_layout.setContentsMargins(0, 0, 0, 0)
+            action_layout.setSpacing(5)
 
-            action_widget_delete = QPushButton("Delete")
-            action_widget_delete.setStyleSheet("""
-                height: 25px;
+            delete_button = QPushButton("Delete")
+            delete_button.setStyleSheet("""
+                padding: 3px 10px;
                 font-size: 12px;
                 background-color: #F44336;
                 color: white;
                 border: none;
                 border-radius: 3px;
             """)
-            action_widget_delete.clicked.connect(lambda _, u_id=user.user_id: self.delete_user(u_id))
+            delete_button.setMaximumWidth(80)
+            delete_button.clicked.connect(lambda _, u_id=user.user_id: self.delete_user(u_id))
+            action_layout.addWidget(delete_button)
 
-            self.user_table.setCellWidget(row, 9, action_widget_edit)
-            self.user_table.setCellWidget(row, 10, action_widget_delete)
+            self.table.setCellWidget(row, 9, action_widget)
 
-        self.total_label.setText(f"Total: {len(filtered_users)}")
+    def handle_double_click(self, index):
+        row = index.row()
+        user_id = int(self.table.item(row, 0).text())
+        user = self.service.get_user_by_id(user_id)  # Ensure this method exists in UserService
+        if user:
+                self.edit_user(user)
+        else:
+             QMessageBox.warning(self, "Error", f"User with ID {user_id} not found.")
 
     def search_users(self):
         search_field = self.search_field.currentText().lower().replace(" ", "_")
         search_term = self.search_input.text().strip().lower()
         if not search_term:
-            if self.controller:
-                users = self.controller.get_all_users()
-                self.load_user_data(users)
+            self.load_users()
             return
 
-        if self.controller:
-            users = self.controller.get_all_users()
-            filtered_users = [
-                user for user in users
-                if search_term in str(getattr(user, search_field, "")).lower()
-            ]
-            self.load_user_data(filtered_users)
-        else:
-            show_warning(self, "Controller not set.")
+        users = self.service.get_all_users()
+        filtered_users = [
+            user for user in users
+            if search_term in str(getattr(user, search_field, "")).lower()
+        ]
+        self.load_users(filtered_users)
 
-    def create_new_user(self):
-        if self.controller:
-            from views.user.create_user_modal import CreateUserModal
-            dialog = CreateUserModal(controller=self.controller, parent=self)
-            if dialog.exec_():
-                users = self.controller.get_all_users()
-                self.load_user_data(users)
-                if hasattr(self.controller, 'notify_user_added'):
-                    self.controller.notify_user_added()
-        else:
-            if hasattr(self.controller, 'notify_controller_missing'):
-                self.controller.notify_controller_missing()
+    def add_user(self):
+        from views.user.create_user_modal import CreateUserModal
+        dialog = CreateUserModal(controller=self.service, parent=self, current_user_email=self.user_dto.email if self.user_dto else None)
+        if dialog.exec_():
+            confirm = ConfirmModal(self, message="Do you want to add this user?", title="Confirm Add")
+            if confirm.exec_() == QDialog.Accepted:
+                self.load_users()
 
     def edit_user(self, user):
-        if self.controller:
-            from views.user.create_user_modal import CreateUserModal
-            dialog = CreateUserModal(controller=self.controller, user=user, parent=self)
-            if dialog.exec_():
-                users = self.controller.get_all_users()
-                self.load_user_data(users)
-                if hasattr(self.controller, 'notify_user_updated'):
-                    self.controller.notify_user_updated()
-        else:
-            if hasattr(self.controller, 'notify_controller_missing'):
-                self.controller.notify_controller_missing()
+        from views.user.create_user_modal import CreateUserModal
+        from lib.common_ui.confirm_modal import ConfirmModal
+        dialog = CreateUserModal(controller=self.service, user=user, parent=self, current_user_email=self.user_dto.email if self.user_dto else None)
+        if dialog.exec_():
+            confirm = ConfirmModal(self, message="Do you want to update this user?", title="Confirm Update")
+            if confirm.exec_() == QDialog.Accepted:
+                self.load_users()
 
     def delete_user(self, user_id):
-        if self.controller and hasattr(self.controller, 'confirm_user_deletion'):
-            confirmed = self.controller.confirm_user_deletion(user_id)
-            if confirmed:
-                success = self.controller.delete_user(user_id)
-                if success:
-                    users = self.controller.get_all_users()
-                    self.load_user_data(users)
-                    if hasattr(self.controller, 'notify_user_deleted'):
-                        self.controller.notify_user_deleted()
-                else:
-                    if hasattr(self.controller, 'notify_user_delete_failed'):
-                        self.controller.notify_user_delete_failed()
-            else:
-                if hasattr(self.controller, 'notify_controller_missing'):
-                    self.controller.notify_controller_missing()
+        from lib.common_ui.confirm_modal import ConfirmModal
+        confirm = ConfirmModal(self, message="Are you sure you want to delete this user?", title="Confirm Delete")
+        if confirm.exec_() == QDialog.Accepted:
+            if self.service.delete_user(user_id):
+                self.load_users()

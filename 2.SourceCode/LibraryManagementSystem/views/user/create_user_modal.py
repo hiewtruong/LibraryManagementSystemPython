@@ -7,12 +7,12 @@ from domain.dto.user.user_dto import UserDTO
 from services.user.user_service import UserService
 
 class CreateUserModal(QDialog):
-    def __init__(self, controller=None, user=None, current_user_email=None, parent=None):
+    def __init__(self, controller=None, user=None, parent=None, current_user_email=None):
         super().__init__(parent)
-        self.controller = controller
         self.user = user
-        self.current_user_email = current_user_email or 'admin@uit.com'
+        self.controller = controller
         self.user_service = UserService.get_instance()
+        self.current_user_email = current_user_email
         
         self.setWindowTitle("Add User" if user is None else "Edit User")
         self.setMinimumSize(400, 400)
@@ -148,8 +148,8 @@ class CreateUserModal(QDialog):
                     QMessageBox.warning(self, "Validation Error", "Email already exists.")
                     return
 
-            created_by = self.user.created_by if self.user else self.current_user_email
-            update_by = self.current_user_email
+                created_by = self.user.created_by if self.user else self.current_user_email
+                update_by = self.current_user_email
 
             user_data = UserDTO(
                 user_id=self.user.user_id if self.user else None,
@@ -164,9 +164,9 @@ class CreateUserModal(QDialog):
                 user_role_id=user_role_id,
                 is_delete=self.user.is_delete if self.user else 0,
                 created_dt=self.user.created_dt if self.user else datetime.now(),
-                created_by=created_by,
+                created_by=self.current_user_email,
                 update_dt=datetime.now(),
-                update_by=update_by
+                update_by=self.current_user_email
             )
 
             if self.user:
