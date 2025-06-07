@@ -8,6 +8,9 @@ from views.transactions_loan.transaction_loan_panel import TransactionLoanPanel
 from views.user.user_panel import UserPanel
 from lib.common_ui.confirm_modal import ConfirmModal
 from controllers.transaction_loan_controller import TransactionLoanController
+from controllers.author_controller import AuthorController
+from controllers.user_controller import UserController
+from PyQt5.QtWidgets import QVBoxLayout
 from time import localtime, strftime
 
 class Ui_AdminDashboard(QtWidgets.QMainWindow):
@@ -92,14 +95,18 @@ class Ui_AdminDashboard(QtWidgets.QMainWindow):
         if hasattr(self.current_panel, 'load_data'):
             self.current_panel.load_data()
 
+
     def show_author_panel(self):
-        self.clear_content()
+        self.clear_content()  # Make sure this clears widgets but not the layout
         self.current_panel = AuthorPanel(self.ui.frame_3)
         self.current_panel.setObjectName("content_panel")
-        self.current_panel.controller = self.controller
+        layout = self.ui.frame_3.layout()
+        if layout is None:
+            
+            layout = QVBoxLayout(self.ui.frame_3)
+            self.ui.frame_3.setLayout(layout)
+        layout.addWidget(self.current_panel)
         self.current_panel.show()
-        if hasattr(self.current_panel, 'load_data'):
-            self.current_panel.load_data()
 
     def show_category_panel(self):
         self.clear_content()
@@ -114,10 +121,13 @@ class Ui_AdminDashboard(QtWidgets.QMainWindow):
         self.clear_content()
         self.current_panel = UserPanel(self.ui.frame_3)
         self.current_panel.setObjectName("content_panel")
-        self.current_panel.controller = self.controller 
+        layout = self.ui.frame_3.layout()
+        if layout is None:
+            
+            layout = QVBoxLayout(self.ui.frame_3)
+            self.ui.frame_3.setLayout(layout)
+        layout.addWidget(self.current_panel)
         self.current_panel.show()
-        if hasattr(self.current_panel, 'load_data'):
-            self.current_panel.load_data()
 
     def show_transaction_loan_panel(self):
         self.clear_content()
