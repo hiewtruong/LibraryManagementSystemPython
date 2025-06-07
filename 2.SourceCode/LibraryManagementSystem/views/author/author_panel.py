@@ -8,6 +8,7 @@ class AuthorPanel(QWidget):
     def __init__(self, controller=None, parent=None):
         super().__init__(parent)
         self.controller = controller
+        print(f"[AuthorPanel] Initialized with controller type: {type(self.controller)}")
         self.initUI()
         self.setMinimumSize(1370, 830)
         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
