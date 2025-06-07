@@ -1,5 +1,7 @@
 from services.user.i_user_service import IUserService
 from views.admin_dashboard_view import Ui_AdminDashboard
+from views.author.author_panel import AuthorPanel
+from views.user.user_panel import UserPanel
 
 class UserController:
     def __init__(self, user_service: IUserService):
@@ -9,9 +11,16 @@ class UserController:
         user_dto = self.user_service.get_user_by_username(username, password, parent=root)
         if user_dto:
             root.hide()
-            dashboard = Ui_AdminDashboard(user_dto)
-            dashboard.show()
-            return dashboard
+            # Determine which panel to show based on user role or attribute
+            role = getattr(user_dto, 'role', '').lower()
+            if role == 'author':
+                panel = AuthorPanel(controller=self)
+            elif role == 'user':
+                panel = UserPanel(controller=self)
+            else:
+                panel = Ui_AdminDashboard(user_dto)
+            panel.show()
+            return panel
         return None
 
     def is_email_duplicate(self, email: str) -> bool:
