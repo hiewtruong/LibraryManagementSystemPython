@@ -1,5 +1,5 @@
 from services.user.i_user_service import IUserService
-from views.admin_dashboard_view import Ui_AdminDashboard
+# from views.admin_dashboard_view import Ui_AdminDashboard
 from views.author.author_panel import AuthorPanel
 from views.user.user_panel import UserPanel
 from services.author.author_service import AuthorService
@@ -25,6 +25,7 @@ class UserController:
                 elif role == 'user':
                     panel = UserPanel(controller=self)
                 else:
+                    from views.admin_dashboard_view import Ui_AdminDashboard
                     panel = Ui_AdminDashboard(user_dto)
                 panel.show()
                 return panel
