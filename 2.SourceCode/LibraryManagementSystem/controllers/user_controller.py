@@ -14,26 +14,12 @@ class UserController:
         user_dto = self.user_service.get_user_by_username(username, password, parent=root)
         if user_dto:
             root.hide()
-            # Determine which panel to show based on user role
             role = getattr(user_dto, 'role', '').lower()
             panel = None
-            try:
-                if role == 'author':
-                    author_service = AuthorService(AuthorRepository())
-                    author_controller = AuthorController(author_service)
-                    panel = AuthorPanel(controller=author_controller)
-                elif role == 'user':
-                    panel = UserPanel(controller=self)
-                else:
-                    from views.admin_dashboard_view import Ui_AdminDashboard
-                    panel = Ui_AdminDashboard(user_dto)
-                panel.show()
-                return panel
-            except Exception as e:
-                print(f"Error initializing panel for role '{role}': {e}")
-        else:
-            print("Invalid username or password.")
-        return None
+            from views.admin_dashboard_view import Ui_AdminDashboard
+            panel = Ui_AdminDashboard(user_dto)
+            panel.show()
+            return panel
 
     def is_email_duplicate(self, email: str) -> bool:
         try:
