@@ -5,15 +5,18 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
-from lib.common_ui.confirm_modal import ConfirmModal
+
 from services.user.user_service import UserService
-from views.user.create_user_modal import CreateUserModal
+
+from lib.common_ui.confirm_modal import ConfirmModal
 class UserPanel(QWidget):
     def __init__(self, parent=None, user_dto=None):
         super().__init__(parent)
         self.setStyleSheet("background-color: white;")
         self.parent = parent
         self.user_dto = user_dto
+        from controllers.user_controller import UserController
+        self.controller = UserController(user_service=UserService.get_instance())
         self.service = UserService.get_instance()
         self.init_ui()
         self.setMinimumSize(1370, 830)
@@ -40,7 +43,7 @@ class UserPanel(QWidget):
         search_layout = QHBoxLayout()
 
         # Search label
-        search_label = QLabel("Search")
+        search_label = QLabel("Search:")
         search_label_font = QFont()
         search_label_font.setPixelSize(13)
         search_label.setFont(search_label_font)
@@ -141,6 +144,7 @@ class UserPanel(QWidget):
 
             # Action buttons (only Delete button)
             action_widget = QWidget()
+            action_widget.setStyleSheet("border: none; background-color: transparent;")
             action_layout = QHBoxLayout(action_widget)
             action_layout.setContentsMargins(0, 0, 0, 0)
             action_layout.setSpacing(5)
@@ -187,21 +191,16 @@ class UserPanel(QWidget):
         from views.user.create_user_modal import CreateUserModal
         dialog = CreateUserModal(controller=self.service, parent=self, current_user_email=self.user_dto.email if self.user_dto else None)
         if dialog.exec_():
-            confirm = ConfirmModal(self, message="Do you want to add this user?", title="Confirm Add")
-            if confirm.exec_() == QDialog.Accepted:
-                self.load_users()
+           self.load_users()
 
     def edit_user(self, user):
         from views.user.create_user_modal import CreateUserModal
-        from lib.common_ui.confirm_modal import ConfirmModal
         dialog = CreateUserModal(controller=self.service, user=user, parent=self, current_user_email=self.user_dto.email if self.user_dto else None)
         if dialog.exec_():
-            confirm = ConfirmModal(self, message="Do you want to update this user?", title="Confirm Update")
-            if confirm.exec_() == QDialog.Accepted:
                 self.load_users()
 
     def delete_user(self, user_id):
-        from lib.common_ui.confirm_modal import ConfirmModal
+       
         confirm = ConfirmModal(self, message="Are you sure you want to delete this user?", title="Confirm Delete")
         if confirm.exec_() == QDialog.Accepted:
             if self.service.delete_user(user_id):

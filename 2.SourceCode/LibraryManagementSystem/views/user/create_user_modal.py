@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from datetime import datetime
 from domain.dto.user.user_dto import UserDTO
+from lib.common_ui.confirm_modal import ConfirmModal
 from services.user.user_service import UserService
 
 class CreateUserModal(QDialog):
@@ -50,7 +51,6 @@ class CreateUserModal(QDialog):
         # Gender combobox
         self.gender_combobox = QComboBox()
         self.gender_combobox.addItems(["Female", "Male"])
-
         # Set initial state if editing user
         if self.user and hasattr(self.user, 'gender'):
             if self.user.gender == 1:
@@ -59,7 +59,7 @@ class CreateUserModal(QDialog):
                 self.gender_combobox.setCurrentText("Female")
 
         form_layout.addRow("Gender:", self.gender_combobox)
-
+      
         # User role combobox
         self.user_role_combobox = QComboBox()
         self.user_roles = self.user_service.get_all_user_roles()
@@ -78,7 +78,13 @@ class CreateUserModal(QDialog):
         form_layout.addRow("User Role:", self.user_role_combobox)
 
         layout.addLayout(form_layout)
-
+          
+        for i in range(form_layout.rowCount()):
+            label_item = form_layout.itemAt(i, QFormLayout.LabelRole)
+            if label_item:
+                widget = label_item.widget()
+            if isinstance(widget, QLabel):
+                widget.setStyleSheet("border: none;")
         button_layout = QHBoxLayout()
         save_button = QPushButton("Save")
         save_button.setStyleSheet("""
@@ -109,6 +115,9 @@ class CreateUserModal(QDialog):
     def save_user(self):
         username = self.username_input.text().strip()
         password = self.password_input.text()
+        # Truncate password to max 50 characters to avoid DB truncation error
+        if password and len(password) > 50:
+            password = password[:50]
         email = self.email_input.text().strip()
         first_name = self.first_name_input.text().strip()
         last_name = self.last_name_input.text().strip()
@@ -168,11 +177,16 @@ class CreateUserModal(QDialog):
                 update_dt=datetime.now(),
                 update_by=self.current_user_email
             )
-
-            if self.user:
-                self.controller.update_user(user_data)
+            confirm_message = "Do you want to update this author?" if self.user else "Do you want to add this author?"
+            confirm = ConfirmModal(self, message=confirm_message, title="Confirm Action")
+            if confirm.exec_() == QDialog.Accepted:
+                if self.user:
+                    self.controller.update_user(user_data)
+                else:
+                    self.controller.create_user(user_data)
+                QMessageBox.information(self, "Success", "User saved successfully.")
+                self.accept()
             else:
-                self.controller.create_user(user_data)
-            self.accept()
+                QMessageBox.information(self, "Cancelled", "Action was cancelled.")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to save user: {str(e)}")
