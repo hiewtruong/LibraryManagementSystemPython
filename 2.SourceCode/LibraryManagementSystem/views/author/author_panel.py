@@ -1,12 +1,14 @@
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
-    QPushButton, QLineEdit, QComboBox, QHeaderView, QSizePolicy, QMessageBox, QDialog
+    QPushButton, QLineEdit, QComboBox, QHeaderView, QSizePolicy, QDialog
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
-from services.author.author_service import AuthorService
+from controllers.author_controller import AuthorController
 from domain.entities.author import Author
 from lib.common_ui.confirm_modal import ConfirmModal
+from services.author.author_service import AuthorService
+from PyQt5.QtWidgets import QMessageBox
 
 class AuthorPanel(QWidget):
     def __init__(self, parent=None, user=None):
@@ -15,6 +17,7 @@ class AuthorPanel(QWidget):
         self.parent = parent
         self.user = user
         self.service = AuthorService.get_instance()
+        self.controller = AuthorController(author_service=self.service, dashboard=self)
         self.init_ui()
         self.setMinimumSize(1370, 830)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -124,7 +127,7 @@ class AuthorPanel(QWidget):
 
     def load_authors(self, authors=None):
         if authors is None:
-            authors = self.service.get_all_authors()
+            authors = self.controller.get_all_authors()
 
         self.table.setRowCount(len(authors))
         for row, author in enumerate(authors):
@@ -138,6 +141,7 @@ class AuthorPanel(QWidget):
 
             # Action buttons (only Delete button)
             action_widget = QWidget()
+            action_widget.setStyleSheet("border: none; background-color: transparent;")
             action_layout = QHBoxLayout(action_widget)
             action_layout.setContentsMargins(0, 0, 0, 0)
             action_layout.setSpacing(5)
@@ -160,7 +164,7 @@ class AuthorPanel(QWidget):
     def handle_double_click(self, index):
         row = index.row()
         author_id = int(self.table.item(row, 0).text())
-        author = self.service.get_author_by_id(author_id)
+        author = self.controller.author_service.get_author_by_id(author_id)
         self.edit_author(author)
 
     def search_authors(self):
@@ -170,7 +174,7 @@ class AuthorPanel(QWidget):
             self.load_authors()
             return
 
-        authors = self.service.get_all_authors()
+        authors = self.controller.get_all_authors()
         filtered_authors = [
             author for author in authors
             if search_term in str(getattr(author, search_field, "")).lower()
@@ -179,25 +183,21 @@ class AuthorPanel(QWidget):
 
     def add_author(self):
         from views.author.create_author_modal import CreateAuthorModal
-        from lib.common_ui.confirm_modal import ConfirmModal
-        dialog = CreateAuthorModal(controller=self.service, parent=self)
+        dialog = CreateAuthorModal(controller=self.controller.author_service, parent=self)
         if dialog.exec_():
-            confirm = ConfirmModal(self, message="Do you want to add this author?", title="Confirm Add")
-            if confirm.exec_() == QDialog.Accepted:
-                self.load_authors()
+            self.load_authors() 
 
     def edit_author(self, author):
         from views.author.create_author_modal import CreateAuthorModal
-        from lib.common_ui.confirm_modal import ConfirmModal
-        dialog = CreateAuthorModal(controller=self.service, author=author, parent=self)
+        dialog = CreateAuthorModal(controller=self.controller.author_service, author=author, parent=self)
         if dialog.exec_():
-            confirm = ConfirmModal(self, message="Do you want to update this author?", title="Confirm Update")
-            if confirm.exec_() == QDialog.Accepted:
-                self.load_authors()
-
+            self.load_authors() 
     def delete_author(self, author_id):
-        from lib.common_ui.confirm_modal import ConfirmModal
         confirm = ConfirmModal(self, message="Are you sure you want to delete this author?", title="Confirm Delete")
         if confirm.exec_() == QDialog.Accepted:
-            if self.service.delete_author(author_id):
+            success = self.controller.delete_author(author_id)
+            if success:
+                ConfirmModal(self, message="Author deleted successfully.", title="Success").exec_()
                 self.load_authors()
+            else:
+                ConfirmModal(self, message="Failed to delete author.", title="Error").exec_()
