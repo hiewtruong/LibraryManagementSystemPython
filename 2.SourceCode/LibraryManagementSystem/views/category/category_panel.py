@@ -9,6 +9,7 @@ from services.category.catetory_service import GenreCategoryService
 from domain.entities.genre_category import GenreCategory
 from datetime import datetime
 from lib.common_ui.confirm_modal import ConfirmModal
+from lib.notifier_utils import show_error, show_success
 
 class CategoryDialog(QDialog):
     def __init__(self, parent=None, category=None, user_dto=None):
@@ -17,6 +18,7 @@ class CategoryDialog(QDialog):
         self.service = GenreCategoryService.get_instance()
         self.category = category
         self.user_dto = user_dto
+        self.parent = parent
         self.init_ui()
         self.setMinimumSize(400, 120)
         self.setStyleSheet("border: none;font-size: 12px;border-radius: 6px;font-weight: 500;")
@@ -72,15 +74,16 @@ class CategoryDialog(QDialog):
         layout.addLayout(button_layout)
 
     def save_category(self):
-        modal = ConfirmModal(self, message="Are you sure you want to save this category?", title="Confirm Save")
-        if modal.exec_() == QtWidgets.QDialog.Accepted:
-            try:
-                category_name = self.name_input.text().strip()
-                genre_category = self.genre_input.text().strip()
-                if not category_name:
-                    QMessageBox.warning(self, "Validation Error", "Category Name is required.")
-                    return
+        try:
+            category_name = self.name_input.text().strip()
+            genre_category = self.genre_input.text().strip()
+            if not category_name:
+                # QMessageBox.warning(self, "Validation Error", "Category Name is required.")
+                show_error(parent=self.parent,message="Category Name is required.")
+                return
 
+            modal = ConfirmModal(self, message="Are you sure you want to save this category?", title="Confirm Save")
+            if modal.exec_() == QtWidgets.QDialog.Accepted:
                 category_data = GenreCategory(
                     genre_category_id=self.category.genre_category_id if self.category else None,
                     name_category=category_name,
@@ -96,8 +99,9 @@ class CategoryDialog(QDialog):
                 else:
                     self.service.add_category(category_data)
                 self.accept()
-            except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to save category: {str(e)}")
+                show_success(parent=self.parent,message="Category saved successfully.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to save category: {str(e)}")
 
 class CategoryPanel(QWidget):
     def __init__(self, parent=None, user_dto=None):
@@ -220,6 +224,7 @@ class CategoryPanel(QWidget):
             action_layout = QHBoxLayout(action_widget)
             action_layout.setContentsMargins(0, 0, 0, 0)
             action_layout.setSpacing(5)
+            action_widget.setStyleSheet("border: none;")
 
             delete_button = QPushButton("Delete")
             delete_button.setStyleSheet("""
@@ -272,5 +277,7 @@ class CategoryPanel(QWidget):
             try:
                 self.service.delete_category(category_id)
                 self.load_categories()
+                show_success(parent=self.parent, message="Category deleted successfully.")
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to delete category: {str(e)}")
+                # QMessageBox.critical(self, "Error", f"Failed to delete category: {str(e)}")
+                show_error(parent=self.parent, message=f"Failed to delete category: {str(e)}")

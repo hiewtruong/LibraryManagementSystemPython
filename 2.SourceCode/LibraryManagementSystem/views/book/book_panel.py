@@ -14,6 +14,7 @@ from datetime import datetime
 import os
 import shutil
 from lib.common_ui.confirm_modal import ConfirmModal
+from lib.notifier_utils import show_error, show_success
 
 class BookDialog(QDialog):
     def __init__(self, parent=None, book=None, user_dto=None):
@@ -24,6 +25,7 @@ class BookDialog(QDialog):
         self.author_service = AuthorService.get_instance()
         self.book = book
         self.user_dto = user_dto
+        self.parent = parent
         self.init_ui()
         self.setMinimumSize(640, 780)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -181,44 +183,46 @@ class BookDialog(QDialog):
             self.image_label.setText("No image")
 
     def save_book(self):
-        modal = ConfirmModal(self, message="Are you sure you want to save this book?", title="Confirm Save")
-        if modal.exec_() == QtWidgets.QDialog.Accepted:
-            try:
-                # Convert selected categories to comma-separated IDs
-                selected_items = self.genre_list.selectedItems()
-                genre_ids = [str(item.data(Qt.UserRole)) for item in selected_items]
-                genre_category = ",".join(genre_ids) if genre_ids else ""
+        try:
+            # Convert selected categories to comma-separated IDs
+            selected_items = self.genre_list.selectedItems()
+            genre_ids = [str(item.data(Qt.UserRole)) for item in selected_items]
+            genre_category = ",".join(genre_ids) if genre_ids else ""
 
-                book_data = Book(
-                    book_id=self.book.book_id if self.book else None,
-                    title=self.title_input.text().strip(),
-                    author=self.author_combo.currentText().strip(),
-                    publisher=self.publisher_input.text().strip(),
-                    genre_category=genre_category,
-                    publish_year=self.year_input.value(),
-                    location=self.location_input.text().strip(),
-                    is_display=self.display_check.isChecked(),
-                    qty_oh=self.qty_oh_input.value(),
-                    cover=self.cover_path,
-                    hashtag=self.hashtag_input.text().strip(),
-                    landing_page=self.landing_page_input.toPlainText().strip(),
-                    created_dt=self.book.created_dt if self.book else datetime.now(),
-                    created_by=self.book.created_by if self.book else "admin",
-                    update_dt=datetime.now(),
-                    update_by=self.user_dto.user_name if self.user_dto else "admin"
-                )
+            book_data = Book(
+                book_id=self.book.book_id if self.book else None,
+                title=self.title_input.text().strip(),
+                author=self.author_combo.currentText().strip(),
+                publisher=self.publisher_input.text().strip(),
+                genre_category=genre_category,
+                publish_year=self.year_input.value(),
+                location=self.location_input.text().strip(),
+                is_display=self.display_check.isChecked(),
+                qty_oh=self.qty_oh_input.value(),
+                cover=self.cover_path,
+                hashtag=self.hashtag_input.text().strip(),
+                landing_page=self.landing_page_input.toPlainText().strip(),
+                created_dt=self.book.created_dt if self.book else datetime.now(),
+                created_by=self.book.created_by if self.book else "admin",
+                update_dt=datetime.now(),
+                update_by=self.user_dto.user_name if self.user_dto else "admin"
+            )
 
-                if not book_data.title or not book_data.author:
-                    QMessageBox.warning(self, "Validation Error", "Title and Author are required fields.")
-                    return
+            if not book_data.title or not book_data.author:
+                # QMessageBox.warning(self, "Validation Error", "Title and Author are required fields.")
+                show_error(parent=self.parent, message="Title and Author are required fields.")
+                return
 
+            modal = ConfirmModal(self, message="Are you sure you want to save this book?", title="Confirm Save")
+            if modal.exec_() == QtWidgets.QDialog.Accepted:
                 if self.book:
                     self.service.update_book(book_data)
                 else:
                     self.service.add_book(book_data)
                 self.accept()
-            except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to save book: {str(e)}")
+                show_success(parent=self.parent,message="Book saved successfully!")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to save book: {str(e)}")
 
 class BookPanel(QWidget):
     def __init__(self, parent=None, user_dto=None):
@@ -256,17 +260,17 @@ class BookPanel(QWidget):
         search_label_font = QFont()
         search_label_font.setPixelSize(13)
         search_label.setFont(search_label_font)
-        search_label.setStyleSheet("border: none;")
-        search_label.setMaximumWidth(50)
+        search_label.setStyleSheet("border: none;padding-right: 10px;")
+        search_label.setMaximumWidth(80)
         search_layout.addWidget(search_label)
         
         # Search components
         self.search_field = QComboBox()
         self.search_field.setMaximumWidth(180)
         self.search_field.setMinimumHeight(25)
-        self.search_field.setMinimumWidth(150)
+        self.search_field.setMinimumWidth(180)
         self.search_field.addItems(["Title", "Author", "Publisher", "Genre Category"])
-        self.search_field.setStyleSheet("padding: 5px; font-size: 13px;border: 0.5px solid;")
+        self.search_field.setStyleSheet("font-size: 13px;")#padding: 5px; border: 0.5px solid;
         search_layout.addWidget(self.search_field)
 
         self.search_input = QLineEdit()
@@ -316,8 +320,16 @@ class BookPanel(QWidget):
             border: 0.5px solid;
             font-size: 12px;
         """)
-        self.table.setColumnWidth(1, 190)
+        # Set size policy to expand horizontally
+        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        # Allow manual resizing of columns
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        # Set initial column widths to distribute space
+        self.table.horizontalHeader().setStretchLastSection(True)  # Ensure the last column stretches to fill remaining space
+        # Set approximate initial widths for columns
+        column_widths = [50, 220, 150, 150, 180, 150, 100, 80, 100, 60]  # Adjust these as needed
+        for i, width in enumerate(column_widths):
+            self.table.setColumnWidth(i, width)
         self.table.verticalHeader().setVisible(False)
         self.table.setSelectionMode(QTableWidget.SingleSelection)
         self.table.setEditTriggers(QTableWidget.NoEditTriggers)
@@ -359,6 +371,7 @@ class BookPanel(QWidget):
             action_layout = QHBoxLayout(action_widget)
             action_layout.setContentsMargins(0, 0, 0, 0)
             action_layout.setSpacing(5)
+            action_widget.setStyleSheet("border: none;")
 
             delete_button = QPushButton("Delete")
             delete_button.setStyleSheet("""
@@ -410,3 +423,6 @@ class BookPanel(QWidget):
         if modal.exec_() == QtWidgets.QDialog.Accepted:
             if self.service.delete_book(book_id):
                 self.load_books()
+                show_success(parent=self.parent, message="Book deleted successfully!")
+            else:
+                show_error(parent=self.parent, message="Failed to delete book. It may be in use or does not exist.")
