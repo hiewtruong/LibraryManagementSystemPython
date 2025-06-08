@@ -195,7 +195,7 @@ class BookDialog(QDialog):
                 author=self.author_combo.currentText().strip(),
                 publisher=self.publisher_input.text().strip(),
                 genre_category=genre_category,
-                publish_year=self.year_input.value(),
+                publish_year=datetime(self.year_input.value(), 1, 1),
                 location=self.location_input.text().strip(),
                 is_display=self.display_check.isChecked(),
                 qty_oh=self.qty_oh_input.value(),
@@ -359,7 +359,8 @@ class BookPanel(QWidget):
             self.table.setItem(row, 2, QTableWidgetItem(book.author))
             self.table.setItem(row, 3, QTableWidgetItem(book.publisher or ""))
             self.table.setItem(row, 4, QTableWidgetItem(book.genre_category or ""))
-            self.table.setItem(row, 5, QTableWidgetItem(str(book.publish_year) if book.publish_year else ""))
+            publish_year = str(book.publish_year.year) if book.publish_year else ""
+            self.table.setItem(row, 5, QTableWidgetItem(publish_year))
             self.table.setItem(row, 6, QTableWidgetItem(book.location or ""))
             stock_status = "Out of Stock" if book.is_out_of_stock else f"{book.qty_oh - book.qty_allocated}"
             self.table.setItem(row, 7, QTableWidgetItem(stock_status))
